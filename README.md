@@ -7,9 +7,9 @@ Solving 2-D Possion方程:$ \nabla^2 u = f,$,Here we set
 
 according to PINN's theorem , 
 
-- $Loss_{res}=||\nabla^2 u - f||^2$,
+- $Loss_{res}=\|\nabla^2 u - f\|^2$,
 
-- $Loss_{bc}=||u(x,0)-0||^2+||u(x,\pi)-0||^2+||u(0,y)-0||^2+||u(\pi,y)-0||^2$.
+- $Loss_{bc}=\|u(x,0)-0\|^2+\|u(x,\pi)-0\|^2+\|u(0,y)-0\|^2+\|u(\pi,y)-0\|^2$.
 
 Here we simply let $L=Loss_{res}+Loss_{bc}$.
 
