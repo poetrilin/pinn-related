@@ -46,7 +46,7 @@ class FLS(nn.Module):
                 self.act = nn.LeakyReLU()
         self.layers = nn.Sequential(
             nn.Linear(d_in, d_hidden),
-            self.SinAct(),
+            SinAct(),
             *[nn.Sequential(
                 nn.Linear(d_hidden, d_hidden),
                 self.act
