@@ -1,0 +1,11 @@
+_*
+# compiled files
+*.pyc
+
+*.typ
+*.pdf
+
+# figures
+img*
+*.jpg
+*.png
