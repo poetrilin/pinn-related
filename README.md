@@ -1,6 +1,6 @@
 # PINN's implementation for 2-D Possion equation
 
-Solving 2-D Possion Equations : $\nabla^2 u =f,$,Here we set
+Solving 2-D Possion Equations : $\nabla^2 u=f$ ,Here we set
 
 - $f(x,y)=-sin(x)sin(y),(x,y)\in [0,1]\times[0,1]$,
 - boundary condition: $u(x,0)=u(x,\pi)=0,u(0,y)=u(\pi,y)=0$.
@@ -13,11 +13,14 @@ according to PINN's theorem ,
 
 Here we simply let $L=Loss_{res}+Loss_{bc}$.
 
-> reference environment:
+> Reference environment:
+> 
 > torch == 2.1.0
+> 
 > python == 3.10.15
 > 
 ## Models 
+
 1. PINN
 
 parameters:
@@ -37,8 +40,11 @@ rRMSE: 1.2832e-02
 ```
 
 2. FLS
+   
 (just let first activation function to be sin)
+
 RESULT:
+
 ```bash
 Epoch 30, Loss: 1.243544e-06
 Relative Error: 6.3557e-03
@@ -46,8 +52,8 @@ rMAE: 6.5656e-03
 rRMSE: 6.2189e-03
 ```
 
-3. Pinnformer
-4. kan
+1. Pinnformer
+2. kan
 
 
 
