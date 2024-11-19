@@ -52,8 +52,8 @@ rMAE: 6.5656e-03
 rRMSE: 6.2189e-03
 ```
 
-1. Pinnformer
-2. kan
+3. Pinnformer
+4. kan
 
 
 

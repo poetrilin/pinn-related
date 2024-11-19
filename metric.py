@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from models.PINN import PINN
+from utils import get_n_paras
 
 def true_solution(x, y):
     return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
@@ -65,3 +66,4 @@ if __name__ == "__main__":
     check_relative_error(model, test_points=100, plot_flag=True)
     print(f"rMAE: {rMAE(500, model):.4e}")
     print(f"rRMSE: {rRMSE(500, model):.4e}")
+    print(f"Number of parameters: {get_n_paras(model)}")

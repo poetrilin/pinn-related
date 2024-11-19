@@ -5,7 +5,7 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 
-from models.PINN import PINN
+from models import PINN,FLS
 from utils import ACT,MODELS,set_seed
 from metric import check_relative_error
 
@@ -60,6 +60,8 @@ def get_model(act:ACT = "tanh",
     match model_name:
         case "pinn":
             model = PINN(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)
+        case "fls":
+            model = FLS(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)    
         case "pinnformer":
             raise NotImplementedError("Pinnformer model is not implemented yet")
         case "kan":
@@ -106,7 +108,7 @@ def plot_loss(loss_list,save_path = None):
 # 训练并验证
 if __name__ == "__main__":
     act = "tanh".lower()
-    model_name = "pinn".lower()
+    model_name = "fls".lower()
     model = get_model(act=act,model_name=model_name)
     trained_model,loss_list = train_lbfgs(model)
     # save model

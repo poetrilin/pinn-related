@@ -6,7 +6,7 @@ from typing import Literal
 
 
 ACT = Literal["relu", "tanh","sigmoid", "silu","gelu","leakyrelu"] 
-MODELS = Literal["pinn","pinnformer","kan"]
+MODELS = Literal["pinn","pinnformer","kan","fls"]
 
 
 def set_seed(seed):
@@ -46,5 +46,4 @@ def get_clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 def get_n_paras(model):
-    
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
