@@ -1,6 +1,8 @@
+import os
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+from models.PINN import PINN
 
 def true_solution(x, y):
     return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
@@ -55,10 +57,11 @@ def rRMSE(test_points, model):
     return torch.sqrt(torch.mean((u_pred - u_true) ** 2)) / torch.sqrt(torch.mean(u_true ** 2))
 
 if __name__ == "__main__":
-    model_path = ...
-    model = ...
+    model_path = os.path.join(os.getcwd(),"trained_models/tanh_pinn.pth")
+    model = PINN(activation="tanh", d_in=2, d_out=1, d_hidden=64)
+
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
     check_relative_error(model, test_points=100, plot_flag=True)
-    print(f"rMAE: {rMAE(500, model)}")
-    print(f"rRMSE: {rRMSE(500, model)}")
+    print(f"rMAE: {rMAE(500, model):.4e}")
+    print(f"rRMSE: {rRMSE(500, model):.4e}")

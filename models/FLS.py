@@ -1,3 +1,10 @@
+"""
+for high frequency,you can substitute the first layer with this activation function
+@ baseline implementation of First Layer Sine
+@ paper: Learning in Sinusoidal Spaces with Physics-Informed Neural Networks
+@ link: https://arxiv.org/abs/2109.09338
+"""
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -7,20 +14,14 @@ from utils import ACT
 
 
 class SinAct(nn.Module):
-    """
-    for high frequency,you can substitute the first layer with this activation function
-    @ baseline implementation of First Layer Sine
-    @ paper: Learning in Sinusoidal Spaces with Physics-Informed Neural Networks
-    @ link: https://arxiv.org/abs/2109.09338
-    """
     def __init__(self):
             super(SinAct, self).__init__() 
 
     def forward(self, x):
         return torch.sin(x)
 
-# 定义PINN模型
-class PINN(nn.Module):
+# 定义FLS模型
+class FLS(nn.Module):
     def __init__(self,
                  activation:ACT="tanh",
                  d_in:int=2,
@@ -28,7 +29,7 @@ class PINN(nn.Module):
                  d_hidden:int=64,
                  n_layer_hidden:int=3
                  ):
-        super(PINN, self).__init__()
+        super(FLS, self).__init__()
         match activation:
             # to use mathc-case, python version >= 3.10
             case "relu":
@@ -45,7 +46,7 @@ class PINN(nn.Module):
                 self.act = nn.LeakyReLU()
         self.layers = nn.Sequential(
             nn.Linear(d_in, d_hidden),
-            self.act,
+            self.SinAct(),
             *[nn.Sequential(
                 nn.Linear(d_hidden, d_hidden),
                 self.act

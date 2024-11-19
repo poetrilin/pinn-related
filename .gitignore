@@ -1,6 +1,7 @@
 _*
 # compiled files
 *.pyc
+*.pth
 
 *.typ
 *.pdf
