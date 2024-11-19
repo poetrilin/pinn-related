@@ -4,10 +4,15 @@ import torch
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
-from models import PINN,FLS
+from models import PINN,FLS,PINNsformer,KAN
 from utils import ACT,MODELS,set_seed
-from metric import check_relative_error
+
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 
 set_seed(seed=42)
 
@@ -41,13 +46,13 @@ def loss_function(model, x, y, boundary_x, boundary_y):
 # 生成训练数据
 def generate_data(N_inside, N_boundary):
     # 内部点
-    x = torch.rand(N_inside, 1, requires_grad=True)
-    y = torch.rand(N_inside, 1, requires_grad=True)
+    x = torch.rand(N_inside, 1, requires_grad=True).to(device)
+    y = torch.rand(N_inside, 1, requires_grad=True).to(device)
     # 边界点
     boundary_x = torch.cat(
-        (torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1), torch.rand(N_boundary, 1), torch.rand(N_boundary, 1)))
+        (torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1), torch.rand(N_boundary, 1), torch.rand(N_boundary, 1))).to(device)
     boundary_y = torch.cat(
-        (torch.rand(N_boundary, 1), torch.rand(N_boundary, 1), torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1)))
+        (torch.rand(N_boundary, 1), torch.rand(N_boundary, 1), torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1))).to(device)
     return x, y, boundary_x, boundary_y
 
 
@@ -63,9 +68,10 @@ def get_model(act:ACT = "tanh",
         case "fls":
             model = FLS(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)    
         case "pinnformer":
-            raise NotImplementedError("Pinnformer model is not implemented yet")
+            model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
         case "kan":
-            raise NotImplementedError("KAN model is not implemented yet")
+            model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
+        
     return model
 # train  PINN with LBFGS optimizer
 def train_lbfgs(model,*,
@@ -84,15 +90,15 @@ def train_lbfgs(model,*,
         loss.backward()
         return loss
     # 训练
-    for epoch in range(1,epochs+1):
+    for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training"):
         optimizer.step(closure)
         loss = closure()
         loss_list.append(loss.item())
-        if epoch % 5 == 0 & verbose:
+        if epoch % 5 == 0 and verbose:
             print(f"Epoch {epoch}, Loss: {loss.item():.6e}")
+        if epoch >=30 and epoch % 10 == 0:
+            torch.save(model.state_dict(),f"trained_models/{model_name}_{epoch}.pth")
     return model,loss_list
-
-
 
 
 def plot_loss(loss_list,save_path = None):
@@ -108,14 +114,15 @@ def plot_loss(loss_list,save_path = None):
 # 训练并验证
 if __name__ == "__main__":
     act = "tanh".lower()
-    model_name = "fls".lower()
-    model = get_model(act=act,model_name=model_name)
-    trained_model,loss_list = train_lbfgs(model)
+    model_name = "kan".lower()
+    model = get_model(act=act,model_name=model_name).to(device)
+    trained_model,loss_list = train_lbfgs(model,epochs=50)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
-    torch.save(trained_model.state_dict(),os.path.join(model_save_path,f"{act}_{model_name}.pth"))
+    torch.save(trained_model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
     loss_save_path = os.path.join(os.getcwd(),"img")
-    plot_loss(loss_list,save_path = os.path.join(loss_save_path,f"{act}_loss.png"))
-    # check metrics and plot
-    check_relative_error(trained_model,test_points = 100,plot_flag = True)
+    plot_loss(loss_list,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))
+
+    print(f"Number of parameters: {sum(p.numel() for p in trained_model.parameters() if p.requires_grad)}")
+    

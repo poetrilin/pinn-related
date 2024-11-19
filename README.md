@@ -37,6 +37,7 @@ Epoch 30, Loss: 1.541266e-06
 Relative Error: 1.3132e-02
 rMAE: 1.4058e-02
 rRMSE: 1.2832e-02
+Number of parameters: 12737
 ```
 
 2. FLS
@@ -50,11 +51,30 @@ Epoch 30, Loss: 1.243544e-06
 Relative Error: 6.3557e-03
 rMAE: 6.5656e-03
 rRMSE: 6.2189e-03
+Number of parameters: 12737
 ```
 
 3. Pinnformer
+RESULT:
+
+```bash
+poch 30, Loss: 4.580366e-06
+Relative Error: 1.1198e-01
+rMAE: 1.1453e-01
+rRMSE: 1.1198e-01
+Number of parameters: 31609
+```
+
+??It seems that the Pinnformer is not well trained, maybe due to that the model is small?
+
 4. kan
 
+```bash
+Relative Error: 3.8850e-02
+rMAE: 3.5541e-02
+rRMSE: 3.8850e-02
+Number of parameters: 10560
+```
 
 
 

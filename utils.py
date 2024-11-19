@@ -6,7 +6,7 @@ from typing import Literal
 
 
 ACT = Literal["relu", "tanh","sigmoid", "silu","gelu","leakyrelu"] 
-MODELS = Literal["pinn","pinnformer","kan","fls"]
+MODELS = Literal["pinn","pinnsformer","kan","fls"]
 
 
 def set_seed(seed):
@@ -47,3 +47,8 @@ def get_clones(module, N):
 
 def get_n_paras(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        torch.nn.init.xavier_uniform(m.weight)
+        m.bias.data.fill_(0.01)

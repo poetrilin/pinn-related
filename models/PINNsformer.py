@@ -19,8 +19,12 @@ class WaveAct(nn.Module):
         return self.w1 * torch.sin(x)+ self.w2 * torch.cos(x)
 
 class FeedForward(nn.Module):
-    def __init__(self, d_model, d_ff=256):
+    def __init__(self, d_model, d_ff=None
+                 ): 
         super(FeedForward, self).__init__() 
+        # substitude d_ff with 2*d_model
+        if d_ff is None:
+            d_ff = 2*d_model
         self.linear = nn.Sequential(*[
             nn.Linear(d_model, d_ff),
             WaveAct(),
@@ -96,10 +100,16 @@ class Decoder(nn.Module):
 
 
 class PINNsformer(nn.Module):
-    def __init__(self, d_out, d_model, d_hidden, N, heads):
+    def __init__(self,d_in, d_out, d_model=32, d_hidden=64, N=1, heads=2):
+        """ 
+        d_in: input dimension,d_out: output dimension, 
+        d_model: model dimension, d_hidden: hidden dimension,
+        N: number of Encoder and Decoder layers,
+        heads: number of heads in MultiheadAttention
+        """
         super(PINNsformer, self).__init__()
 
-        self.linear_emb = nn.Linear(2, d_model)
+        self.linear_emb = nn.Linear(d_in, d_model)
 
         self.encoder = Encoder(d_model, N, heads)
         self.decoder = Decoder(d_model, N, heads)
@@ -111,13 +121,11 @@ class PINNsformer(nn.Module):
             nn.Linear(d_hidden, d_out)
         ])
 
-    def forward(self, x, t):
-        src = torch.cat((x,t), dim=-1)
+    def forward(self, src):
         src = self.linear_emb(src)
-
         e_outputs = self.encoder(src)
         d_output = self.decoder(src, e_outputs)
         output = self.linear_out(d_output)
-        # pdb.set_trace()
-        # raise Exception('stop')
+        
+        
         return output
