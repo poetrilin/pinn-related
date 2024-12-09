@@ -97,7 +97,7 @@ def train_lbfgs(model,*,
         if epoch % 5 == 0 and verbose:
             print(f"Epoch {epoch}, Loss: {loss.item():.6e}")
         if epoch >=30 and epoch % 10 == 0:
-            torch.save(model.state_dict(),f"trained_models/{model_name}_{epoch}.pth")
+            torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
     return model,loss_list
 
 

@@ -3,5 +3,7 @@ from .PINN import PINN
 from .FLS import FLS
 from .PINNsformer import PINNsformer
 from .KAN import KAN
+from .DeepONet import DeepONet
+from .FNO import FNO1d
 
-__all__ = ['PINN','FLS','PINNsformer','KAN']
+__all__ = ['PINN','FLS','PINNsformer','KAN','DeepONet','FNO1d']
