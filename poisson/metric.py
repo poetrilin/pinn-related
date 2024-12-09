@@ -6,7 +6,6 @@ from models import PINN,FLS,PINNsformer,KAN
 from utils import get_n_paras
 
 
-
 def true_solution(x, y):
     return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
 def sampling(nx:int,ny:int):
@@ -28,21 +27,7 @@ def check_relative_error(model,test_points = 100,plot_flag = False):
     # 相对误差计算
     relative_error = torch.norm(u_pred - u_true) / torch.norm(u_true)
     print(f"Relative Error: {relative_error.item():.4e}")
-    # if plot_flag:
-    #     # 将张量移动到 CPU 并转换为 NumPy 数组
-    #     X_mesh_cpu = X_mesh.cpu().numpy()
-    #     Y_mesh_cpu = Y_mesh.cpu().numpy()
-    #     u_pred_cpu = u_pred.cpu().numpy().reshape(test_points, test_points)
-    #     plt.figure(figsize=(12, 6))
-    #     plt.subplot(1, 2, 1)
-    #     plt.pcolormesh(X_mesh_cpu,Y_mesh_cpu, u_pred.reshape(test_points, test_points), shading="auto")
-    #     plt.colorbar()
-    #     plt.title("Predicted Solution")
-    #     plt.subplot(1, 2, 2)
-    #     plt.pcolormesh(X_mesh_cpu,Y_mesh_cpu, u_true.reshape(test_points, test_points), shading="auto")
-    #     plt.colorbar()
-    #     plt.title("True Solution")
-    #     plt.savefig("pred_solution.png")
+    
 
 #rMAE
 def rMAE(test_points, model):
