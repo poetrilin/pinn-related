@@ -64,9 +64,9 @@ class NaiveFourierKANLayer(nn.Module):
         y = torch.reshape( y, outshape)
         return y
 
-class FourierKAN(nn.Module):
+class fftKAN(nn.Module):
     def __init__(self, inputdim, outdim, hidden_dim=None, gridsize=5, addbias=True, smooth_initialization=False):
-        super(FourierKAN,self).__init__()
+        super(fftKAN,self).__init__()
         if hidden_dim is None:
             hidden_dim = inputdim*2+1
         self.fkan1 = NaiveFourierKANLayer(inputdim, hidden_dim, gridsize, addbias, smooth_initialization)

@@ -8,7 +8,7 @@ from tqdm import tqdm
 import sys 
 # 上级目录导入
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from models import PINN,FLS,PINNsformer,KAN
+from models import PINN,FLS,PINNsformer,KAN,RBFKAN,fftKAN
 from utils import ACT,MODELS,set_seed
 
 if torch.cuda.is_available():
@@ -73,7 +73,10 @@ def get_model(act:ACT = "tanh",
             model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
         case "kan":
             model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
-        
+        case "rbfkan":
+            model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)
+        case "fftKAN":
+            model = fftKAN(inputdim=2,outdim=1,hidden_dim=64,gridsize=5)
     return model
 # train  PINN with LBFGS optimizer
 def train_lbfgs(model,*,
@@ -116,15 +119,18 @@ def plot_loss(loss_list,save_path = None):
 # 训练并验证
 if __name__ == "__main__":
     act = "tanh".lower()
-    model_name = "kan".lower()
+    model_name = "rbfkan".lower()
     model = get_model(act=act,model_name=model_name).to(device)
-    trained_model,loss_list = train_lbfgs(model,epochs=50)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
+    if not os.path.exists(model_save_path):
+        os.makedirs(model_save_path)
+    trained_model,loss_list = train_lbfgs(model,epochs=50)
     torch.save(trained_model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
     loss_save_path = os.path.join(os.getcwd(),"img")
+    if not os.path.exists(loss_save_path):
+        os.makedirs(loss_save_path)
     plot_loss(loss_list,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))
-
     print(f"Number of parameters: {sum(p.numel() for p in trained_model.parameters() if p.requires_grad)}")
     

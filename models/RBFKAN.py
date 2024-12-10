@@ -26,15 +26,18 @@ class RBFKANLayer(nn.Module):
         return output
     
 class RBFKAN(nn.Module):
-    def __init__(self, input_dim, output_dim, num_centers, hidden_dim=None):
+    def __init__(self, input_dim, output_dim, num_centers=64, hidden_dim=64,hidden_layers=1):
         super(RBFKAN, self).__init__()
-        if hidden_dim is None:
-            hidden_dim = input_dim*2+1
-        self.layer1 = RBFKANLayer(input_dim, hidden_dim, num_centers)
-        self.layer2 = RBFKANLayer(hidden_dim, output_dim, num_centers)
-
+        
+        self.inlayer = RBFKANLayer(input_dim, hidden_dim, num_centers)
+        self.hidden_layers = nn.ModuleList([RBFKANLayer(hidden_dim, hidden_dim, num_centers) for _ in range(hidden_layers)])
+        self.outlayer = RBFKANLayer(hidden_dim, output_dim,num_centers)
+        self.act = torch.tanh
     def forward(self, x):
-        x = self.layer1(x)
-        x = torch.relu(x)
-        x = self.layer2(x)
+        x = self.inlayer(x)
+        x = self.act(x)
+        for layer in self.hidden_layers:
+            x = layer(x)
+            x = self.act(x)
+        x = self.outlayer(x)
         return x

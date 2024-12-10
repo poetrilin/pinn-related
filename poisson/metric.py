@@ -2,7 +2,9 @@ import os
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
-from models import PINN,FLS,PINNsformer,KAN
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from models import PINN,FLS,PINNsformer,KAN,RBFKAN,fftKAN
 from utils import get_n_paras
 
 
@@ -64,11 +66,14 @@ def test(model_name="kan"):
 
 if __name__ == "__main__":
     
-    model_path = os.path.join(os.getcwd(),"trained_models/kan-50.pth")
+    model_path = os.path.join(os.getcwd(),"trained_models/pinn.pth")
+    # model = PINN(d_in=2,d_out=1,d_hidden=64,n_layer_hidden=3,activation="tanh")
     # model = FLS(d_in=2,d_out=1,d_hidden=64,n_layer_hidden=3,activation="tanh")
     # model = PINNsformer(d_in = 2,d_out = 1, d_hidden=64, d_model=32, N=1, heads=2)
 
-    model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
+    # model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
+    
+    model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=64,hidden_layers=1)
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
     check_relative_error(model, test_points=100, plot_flag=True)
