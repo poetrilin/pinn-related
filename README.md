@@ -1,17 +1,27 @@
 # AI4pde implementation 
 
+
+
+> Reference environment:
+> 
+> torch == 2.1.0
+> 
+> python == 3.10.15
+
 ## Models 
 
 
 ## PDEs
 
-### 2-D Possion equation
+### 2-D Possion equation ✅
 
 Solving 2-D Possion Equations : $\nabla^2 u=f$ ,Here we set
 
 - $f(x,y)=-sin(x)sin(y),(x,y)\in [0,1]\times[0,1]$,
 
-### 1D Burger's equation
+specific inplementation in [poisson](poisson\README.md)
+
+### 1D Burger's equation :x:
 
 Data Driven: We use DeepONet and FNO
 

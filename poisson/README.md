@@ -11,14 +11,9 @@ according to PINN's theorem ,
 
 - $Loss_{bc}=\|u(x,0)-0\|^2+\|u(x,\pi)-0\|^2+\|u(0,y)-0\|^2+\|u(\pi,y)-0\|^2$.
 
-Here we simply let $L=Loss_{res}+Loss_{bc}$.
+Here we simply let $L=Loss_{res}+Loss_{bc}$ .
 
-> Reference environment:
-> 
-> torch == 2.1.0
-> 
-> python == 3.10.15
->
+
 ## Models 
 
 1. PINN

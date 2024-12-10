@@ -78,9 +78,6 @@ class fftKAN(nn.Module):
         x = self.fkan2(x)
         return x
 
-
-
-
 # def demo():
 #     bs = 10
 #     L = 3 #Not necessary just to show that additional dimensions are batched like Linear
