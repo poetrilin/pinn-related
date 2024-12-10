@@ -15,6 +15,9 @@ Solving 2-D Possion Equations : $\nabla^2 u=f$ ,Here we set
 
 Data Driven: We use DeepONet and FNO
 
-1D Burgers' equation: $\frac{\partial u}{\partial t}+u\frac{\partial u}{\partial x}=0$
+1D Burgers' equation: 
+$$
+\frac{\partial u} {\partial t}+u \frac{\partial u} {\partial x}=\nu\frac{\partial^{2} u} {\partial x^{2}} 
+$$
 
 using $t \in [0,2)$ infer $u(x,t=2)$

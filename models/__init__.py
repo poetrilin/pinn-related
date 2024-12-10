@@ -5,5 +5,6 @@ from .PINNsformer import PINNsformer
 from .KAN import KAN
 from .DeepONet import DeepONet
 from .FNO import FNO1d
+from .RBFKAN import RBFKAN
 
-__all__ = ['PINN','FLS','PINNsformer','KAN','DeepONet','FNO1d']
+__all__ = ['PINN','FLS','PINNsformer','KAN','DeepONet','FNO1d','RBFKAN']

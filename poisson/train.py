@@ -5,7 +5,9 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
+import sys 
+# 上级目录导入
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from models import PINN,FLS,PINNsformer,KAN
 from utils import ACT,MODELS,set_seed
 

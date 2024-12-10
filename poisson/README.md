@@ -18,7 +18,7 @@ Here we simply let $L=Loss_{res}+Loss_{bc}$.
 > torch == 2.1.0
 > 
 > python == 3.10.15
-> 
+>
 ## Models 
 
 1. PINN
