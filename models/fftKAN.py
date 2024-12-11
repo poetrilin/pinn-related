@@ -9,7 +9,7 @@ import numpy as np
 # Avoiding the issues of going out of grid
 
 class NaiveFourierKANLayer(nn.Module):
-    def __init__( self, inputdim, outdim, gridsize, addbias=True, smooth_initialization=False):
+    def __init__( self, inputdim, outdim, gridsize, addbias=True, smooth_initialization=True):
         super(NaiveFourierKANLayer,self).__init__()
         self.gridsize= gridsize
         self.addbias = addbias
@@ -65,17 +65,21 @@ class NaiveFourierKANLayer(nn.Module):
         return y
 
 class fftKAN(nn.Module):
-    def __init__(self, inputdim, outdim, hidden_dim=None, gridsize=5, addbias=True, smooth_initialization=False):
+    def __init__(self, inputdim, outdim, hidden_dim=None, gridsize=5, hidden_layers=1, addbias=True, smooth_initialization=True):
         super(fftKAN,self).__init__()
-        if hidden_dim is None:
-            hidden_dim = inputdim*2+1
-        self.fkan1 = NaiveFourierKANLayer(inputdim, hidden_dim, gridsize, addbias, smooth_initialization)
-        self.fkan2 = NaiveFourierKANLayer(hidden_dim, outdim, gridsize, addbias, smooth_initialization)
+        
+        self.fkan_in = NaiveFourierKANLayer(inputdim, hidden_dim, gridsize, addbias, smooth_initialization)
+        self.hiddens = nn.ModuleList([NaiveFourierKANLayer(hidden_dim, hidden_dim, gridsize, addbias, smooth_initialization) for _ in range(hidden_layers)])
+        self.fkan_out = NaiveFourierKANLayer(hidden_dim, outdim, gridsize, addbias, smooth_initialization)
         self.act = torch.tanh
     def forward(self,x):
-        x = self.fkan1(x)
+        x = self.fkan_in(x)
         x = self.act(x)
-        x = self.fkan2(x)
+
+        for layer in self.hiddens:
+            x = layer(x)
+            x = self.act(x)
+        x = self.fkan_out(x)
         return x
 
 # def demo():

@@ -3,7 +3,8 @@ import torch.nn as nn
 import numpy as np
 import sys 
 sys.path.append('..')
-from utils import ACT
+from mytype import ACT
+
 
 
 class SinAct(nn.Module):

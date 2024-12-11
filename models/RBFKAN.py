@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 
 class RBFKANLayer(nn.Module):
-    def __init__(self, input_dim, output_dim, num_centers, alpha=1.0):
+    def __init__(self, input_dim, output_dim, num_centers, alpha=0.5):
         super(RBFKANLayer, self).__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim

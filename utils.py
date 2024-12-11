@@ -1,12 +1,9 @@
 import numpy as np
 import torch
 import torch.nn as nn
-import copy
 from typing import Literal
-
-
-ACT = Literal["relu", "tanh","sigmoid", "silu","gelu","leakyrelu"] 
-MODELS = Literal["pinn","pinnsformer","kan","fls"]
+from models import PINN,FLS,PINNsformer,KAN,RBFKAN,fftKAN,wavKAN
+from mytype import ACT,MODELS
 
 
 def set_seed(seed):
@@ -16,6 +13,30 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     np.random.seed(seed)
+
+def get_model(act:ACT = "tanh",
+              model_name:MODELS = "pinn",
+              input_dim = 2,
+              hidden_dim = 64,
+              output_dim = 1,
+              ):
+    match model_name:
+        case "pinn":
+            model = PINN(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)
+        case "fls":
+            model = FLS(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)    
+        case "pinnsformer":
+            model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
+        case "kan":
+            model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
+        case "rbfkan":
+            model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)
+        case "fftkan":
+            model = fftKAN(inputdim=2,outdim=1,hidden_dim=32,gridsize=5,hidden_layers=1)
+        case "wavkan":
+            model = wavKAN(layers_hidden=[2,64,32,1])
+    return model
+
 
 
 def get_data(x_range, y_range, x_num, y_num):
@@ -34,6 +55,7 @@ def get_data(x_range, y_range, x_num, y_num):
     return res, b_left, b_right, b_upper, b_lower
 
 
+
 def make_time_sequence(src, num_step=5, step=1e-4):
     dim = num_step
     src = np.repeat(np.expand_dims(src, axis=1), dim, axis=1)  # (N, L, 2)
@@ -41,9 +63,6 @@ def make_time_sequence(src, num_step=5, step=1e-4):
         src[:,i,-1] += step*i
     return src
 
-
-def get_clones(module, N):
-    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
 
 def get_n_paras(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)

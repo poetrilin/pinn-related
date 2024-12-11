@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from models import PINN,FLS,PINNsformer,KAN,RBFKAN,fftKAN
-from utils import get_n_paras
-
+from utils import get_n_paras, ACT,MODELS,set_seed,get_model
 
 def true_solution(x, y):
     return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
@@ -64,16 +63,12 @@ def test(model_name="kan"):
         print(f"rRMSE: {rRMSE(100, model):.4e}")
         print('-'*30)
 
-if __name__ == "__main__":
-    
-    model_path = os.path.join(os.getcwd(),"trained_models/pinn.pth")
-    # model = PINN(d_in=2,d_out=1,d_hidden=64,n_layer_hidden=3,activation="tanh")
-    # model = FLS(d_in=2,d_out=1,d_hidden=64,n_layer_hidden=3,activation="tanh")
-    # model = PINNsformer(d_in = 2,d_out = 1, d_hidden=64, d_model=32, N=1, heads=2)
 
-    # model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
-    
-    model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=64,hidden_layers=1)
+if __name__ == "__main__":
+    model_name = "wavkan"
+    model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
+    model = get_model(model_name=model_name)
+
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
     check_relative_error(model, test_points=100, plot_flag=True)

@@ -8,8 +8,7 @@ from tqdm import tqdm
 import sys 
 # 上级目录导入
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from models import PINN,FLS,PINNsformer,KAN,RBFKAN,fftKAN
-from utils import ACT,MODELS,set_seed
+from utils import set_seed,get_model
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
@@ -58,30 +57,11 @@ def generate_data(N_inside, N_boundary):
     return x, y, boundary_x, boundary_y
 
 
-def get_model(act:ACT = "tanh",
-              model_name:MODELS = "pinn",
-              input_dim = 2,
-              hidden_dim = 64,
-              output_dim = 1,
-              ):
-    match model_name:
-        case "pinn":
-            model = PINN(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)
-        case "fls":
-            model = FLS(activation=act,d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim)    
-        case "pinnformer":
-            model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
-        case "kan":
-            model = KAN(input_dim=2,hidden_dim=64,output_dim=1,num_layers=1)
-        case "rbfkan":
-            model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)
-        case "fftKAN":
-            model = fftKAN(inputdim=2,outdim=1,hidden_dim=64,gridsize=5)
-    return model
-# train  PINN with LBFGS optimizer
+
+# train PINN with LBFGS optimizer
 def train_lbfgs(model,*,
           epochs = 30,
-          lr = 0.1,
+          lr = 5e-2,
           N_inside   = 1000,
           N_boundary = 200,
           verbose    = True):
@@ -99,10 +79,10 @@ def train_lbfgs(model,*,
         optimizer.step(closure)
         loss = closure()
         loss_list.append(loss.item())
-        if epoch % 5 == 0 and verbose:
+        if epoch % 10 == 0 and verbose:
             print(f"Epoch {epoch}, Loss: {loss.item():.6e}")
-        if epoch >=30 and epoch % 10 == 0:
-            torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
+        # if epoch >=50 and epoch % 20 == 0:
+        #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
     return model,loss_list
 
 
@@ -119,13 +99,13 @@ def plot_loss(loss_list,save_path = None):
 # 训练并验证
 if __name__ == "__main__":
     act = "tanh".lower()
-    model_name = "rbfkan".lower()
+    model_name = "wavkan".lower()
     model = get_model(act=act,model_name=model_name).to(device)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
-    trained_model,loss_list = train_lbfgs(model,epochs=50)
+    trained_model,loss_list = train_lbfgs(model,epochs=40)
     torch.save(trained_model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
     loss_save_path = os.path.join(os.getcwd(),"img")

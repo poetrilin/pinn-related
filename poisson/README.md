@@ -23,15 +23,14 @@ parameters:
 - n_hidden: 64
 - n_hideen_layers: 3
 - Optimizer: L-BFGS
-- lr: 1e-3
-- Epochs: 30
+- lr: 1e-2
+- Epochs: 40
 ```
 RESULT:
 ```bash
-Epoch 30, Loss: 1.541266e-06
-Relative Error: 1.3132e-02
-rMAE: 1.4058e-02
-rRMSE: 1.2832e-02
+Relative Error: 1.7344e-02
+rMAE: 1.9115e-02
+rRMSE: 1.7344e-02
 Number of parameters: 12737
 ```
 
@@ -42,10 +41,10 @@ Number of parameters: 12737
 RESULT:
 
 ```bash
-Epoch 30, Loss: 1.243544e-06
-Relative Error: 6.3557e-03
-rMAE: 6.5656e-03
-rRMSE: 6.2189e-03
+Epoch 40, Loss: 1.243544e-06
+Relative Error: 9.7897e-03
+rMAE: 9.6162e-03
+rRMSE: 9.7897e-03
 Number of parameters: 12737
 ```
 
@@ -54,10 +53,9 @@ Number of parameters: 12737
 RESULT:
 
 ```bash
-poch 30, Loss: 4.580366e-06
-Relative Error: 1.1198e-01
-rMAE: 1.1453e-01
-rRMSE: 1.1198e-01
+Relative Error: 9.4299e-02
+rMAE: 1.0884e-01
+rRMSE: 9.4299e-02
 Number of parameters: 31609
 ```
 
@@ -66,11 +64,29 @@ Number of parameters: 31609
 4. kan
 
 ```bash
-Relative Error: 3.8850e-02
-rMAE: 3.5541e-02
-rRMSE: 3.8850e-02
+Relative Error: 3.3851e-02
+rMAE: 2.8908e-02
+rRMSE: 3.3851e-02
 Number of parameters: 10560
+# 但是训练时间久，约为3倍？
 ```
 
+5. rbfkan
+    
+不好训,可能不收敛,alpha 如何确定？
 
+```bash
+Relative Error: 7.4790e-02
+rMAE: 6.6253e-02
+rRMSE: 7.4790e-02
+Number of parameters: 8288
+```
 
+6. fftkan
+
+```bash
+Relative Error: 3.0648e-02
+rMAE: 2.8069e-02
+rRMSE: 3.0648e-02
+Number of parameters: 11265
+```

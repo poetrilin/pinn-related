@@ -7,5 +7,6 @@ from .DeepONet import DeepONet
 from .FNO import FNO1d
 from .RBFKAN import RBFKAN
 from .fftKAN import fftKAN
+from .wavKAN import wavKAN
 
-__all__ = ['PINN','FLS','PINNsformer','KAN','DeepONet','FNO1d','RBFKAN','fftKAN']
+__all__ = ['PINN','FLS','PINNsformer','KAN','DeepONet','FNO1d','RBFKAN','fftKAN','wavKAN']

@@ -4,10 +4,12 @@
 
 import torch
 import torch.nn as nn
-import sys 
-sys.path.append('..')
+import copy
 
-from utils import get_clones
+
+def get_clones(module, N):
+    return nn.ModuleList([copy.deepcopy(module) for i in range(N)])
+
 
 class WaveAct(nn.Module):
     def __init__(self):
@@ -71,7 +73,6 @@ class DecoderLayer(nn.Module):
         x = x + self.ff(x2)
         return x
 
-
 class Encoder(nn.Module):
     def __init__(self, d_model, N, heads):
         super(Encoder, self).__init__()
@@ -83,7 +84,6 @@ class Encoder(nn.Module):
         for i in range(self.N):
             x = self.layers[i](x)
         return self.act(x)
-
 
 class Decoder(nn.Module):
     def __init__(self, d_model, N, heads):
