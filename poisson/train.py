@@ -65,7 +65,7 @@ def train_adam(model,
                lr=1e-4,
                verbose = True):
     
-    Adam_loss_list = []
+    loss_list = []
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with Adam"):
         optimizer.zero_grad()
@@ -76,7 +76,7 @@ def train_adam(model,
         if epoch % 200 == 0 and verbose:
             print(f"Adam Epoch {epoch}, Loss: {loss.item():.6e}")
     
-    return model,Adam_loss_list
+    return model,loss_list
 
 # train PINN with LBFGS optimizer
 def train_lbfgs(model,
@@ -85,9 +85,9 @@ def train_lbfgs(model,
                boundary_y,
                *,
                epochs = 30,
-               lr=1e-4,
+               lr=1e-3,
                verbose = True):
-    l_BFGS_loss_list = []
+    loss_list = []
     # 模型和优化器
     optimizer = torch.optim.LBFGS(model.parameters(), lr=lr)
     def closure():
@@ -99,7 +99,7 @@ def train_lbfgs(model,
     for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with L-BFGS"):
         optimizer.step(closure)
         loss = closure()
-        l_BFGS_loss_list.append(loss.item())
+        loss_list.append(loss.item())
         if epoch % 10 == 0 and verbose:
             print(f"L-BFGS Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
@@ -128,11 +128,11 @@ if __name__ == "__main__":
     N_inside = 1000
     N_boundary = 200
     x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
-    # trained_model,loss_list = train_adam( model,x,y,
+    # trained_model,loss_list_adam = train_adam( model,x,y,
     #                                       boundary_x,
     #                                       boundary_y  
     #                                       )
-    model,loss_list = train_lbfgs(model,x,y,
+    model, loss_list_lbfgs = train_lbfgs( model,x,y,
                                           boundary_x,
                                           boundary_y,  
                                           epochs=40)
@@ -141,6 +141,7 @@ if __name__ == "__main__":
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
-    plot_loss(loss_list,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))
+    # plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))    
+    plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     
