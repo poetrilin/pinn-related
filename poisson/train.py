@@ -61,21 +61,24 @@ def train_adam(model,
                boundary_x,
                boundary_y,
                *,
-               epochs = 3000,
+               epochs =30000,
                lr=1e-4,
                verbose = True):
     
     loss_list = []
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs, eta_min=1e-7)
     for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with Adam"):
         optimizer.zero_grad()
         loss = loss_function(model, x, y, boundary_x, boundary_y)
         loss.backward()
         optimizer.step()
+        lr_scheduler.step()
         loss_list.append(loss.item())
-        if epoch % 200 == 0 and verbose:
+        if epoch % 100 == 0 and verbose:
             print(f"Adam Epoch {epoch}, Loss: {loss.item():.6e}")
-    
+        # if epoch >=50 and epoch % 20 == 0:
+        #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
     return model,loss_list
 
 # train PINN with LBFGS optimizer
@@ -84,32 +87,36 @@ def train_lbfgs(model,
                boundary_x,
                boundary_y,
                *,
-               epochs = 30,
+               epochs = 1000,
                lr=1e-3,
                verbose = True):
     loss_list = []
     # 模型和优化器
-    optimizer = torch.optim.LBFGS(model.parameters(), lr=lr)
+    optimizer = torch.optim.LBFGS(model.parameters(), lr=lr,line_search_fn="strong_wolfe")
+    # lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=epochs,eta_min=0)
     def closure():
         optimizer.zero_grad()
         loss = loss_function(model, x, y, boundary_x, boundary_y)
         loss.backward()
         return loss
-    # 训练
+    
     for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with L-BFGS"):
         optimizer.step(closure)
+        # lr_scheduler.step()
         loss = closure()
         loss_list.append(loss.item())
-        if epoch % 10 == 0 and verbose:
-            print(f"L-BFGS Epoch {epoch}, Loss: {loss.item():.6e}")
+        if epoch % 5 == 0 and verbose:
+            print(f"LBFGS Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
     return model,loss_list
 
 
-def plot_loss(loss_list,save_path = None):  
+def plot_loss(loss_list,save_path = None,log_scale = True):  
     plt.plot(loss_list)
     plt.xlabel("Epoch")
+    if log_scale:
+        plt.yscale("log")
     plt.ylabel("Loss")
     plt.title("Training Loss Curve")
     if isinstance(save_path,str):
@@ -125,23 +132,34 @@ if __name__ == "__main__":
     model_save_path = os.path.join(os.getcwd(),"trained_models")
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
-    N_inside = 1000
-    N_boundary = 200
-    x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
-    # trained_model,loss_list_adam = train_adam( model,x,y,
-    #                                       boundary_x,
-    #                                       boundary_y  
-    #                                       )
-    model, loss_list_lbfgs = train_lbfgs( model,x,y,
-                                          boundary_x,
-                                          boundary_y,  
-                                          epochs=40)
-    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
-    # save loss curve
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
-    # plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))    
-    plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))
+    N_inside = 1000
+    N_boundary = 200
+    x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
+    adam_trained_flag = False
+    if adam_trained_flag:
+        model.load_state_dict(torch.load(os.path.join(model_save_path,f"{model_name}-adam.pth")))
+    else:
+        trained_model,loss_list_adam = train_adam( model,
+                                                x,y,
+                                            boundary_x,
+                                            boundary_y  
+                                            )
+        print(f"Period 1 end, Loss: {loss_list_adam[-1]:.6e}")
+        torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-adam.pth"))
+        plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))    
+    
+    
+    model, loss_list_lbfgs = train_lbfgs( model,x,y,
+                                          boundary_x,
+                                          boundary_y,
+                                          )
+    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
+    # save loss curve
+    
+    plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))
+
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     
