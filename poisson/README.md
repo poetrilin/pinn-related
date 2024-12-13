@@ -23,7 +23,7 @@ parameters:
 - n_hidden: 64
 - n_hideen_layers: 3
 - Optimizer: L-BFGS
-- lr: 1e-2
+- lr: 5e-2
 - Epochs: 40
 ```
 RESULT:
@@ -90,3 +90,7 @@ rMAE: 2.8069e-02
 rRMSE: 3.0648e-02
 Number of parameters: 11265
 ```
+
+7. wavkan
+
+```bash

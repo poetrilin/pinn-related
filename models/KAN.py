@@ -172,6 +172,9 @@ class KANLinear(torch.nn.Module):
 
     @torch.no_grad()
     def update_grid(self, x: torch.Tensor, margin=0.01):
+        """ 
+        Update the grid based on the given input tensor.
+        """
         assert x.dim() == 2 and x.size(1) == self.in_features
         batch = x.size(0)
 

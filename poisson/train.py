@@ -43,7 +43,6 @@ def loss_function(model, x, y, boundary_x, boundary_y):
 
     return equation_loss +  boundary_loss
 
-
 # 生成训练数据
 def generate_data(N_inside, N_boundary):
     # 内部点
@@ -56,17 +55,39 @@ def generate_data(N_inside, N_boundary):
         (torch.rand(N_boundary, 1), torch.rand(N_boundary, 1), torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1))).to(device)
     return x, y, boundary_x, boundary_y
 
-
+# train PINN with Adam optimizer
+def train_adam(model,
+               x,y,
+               boundary_x,
+               boundary_y,
+               *,
+               epochs = 3000,
+               lr=1e-4,
+               verbose = True):
+    
+    Adam_loss_list = []
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with Adam"):
+        optimizer.zero_grad()
+        loss = loss_function(model, x, y, boundary_x, boundary_y)
+        loss.backward()
+        optimizer.step()
+        loss_list.append(loss.item())
+        if epoch % 200 == 0 and verbose:
+            print(f"Adam Epoch {epoch}, Loss: {loss.item():.6e}")
+    
+    return model,Adam_loss_list
 
 # train PINN with LBFGS optimizer
-def train_lbfgs(model,*,
-          epochs = 30,
-          lr = 5e-2,
-          N_inside   = 1000,
-          N_boundary = 200,
-          verbose    = True):
-    x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
-    loss_list = []
+def train_lbfgs(model,
+                x,y,
+               boundary_x,
+               boundary_y,
+               *,
+               epochs = 30,
+               lr=1e-4,
+               verbose = True):
+    l_BFGS_loss_list = []
     # 模型和优化器
     optimizer = torch.optim.LBFGS(model.parameters(), lr=lr)
     def closure():
@@ -75,19 +96,18 @@ def train_lbfgs(model,*,
         loss.backward()
         return loss
     # 训练
-    for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training"):
+    for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with L-BFGS"):
         optimizer.step(closure)
         loss = closure()
-        loss_list.append(loss.item())
+        l_BFGS_loss_list.append(loss.item())
         if epoch % 10 == 0 and verbose:
-            print(f"Epoch {epoch}, Loss: {loss.item():.6e}")
+            print(f"L-BFGS Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
     return model,loss_list
 
 
-def plot_loss(loss_list,save_path = None):
-    
+def plot_loss(loss_list,save_path = None):  
     plt.plot(loss_list)
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
@@ -99,18 +119,28 @@ def plot_loss(loss_list,save_path = None):
 # 训练并验证
 if __name__ == "__main__":
     act = "tanh".lower()
-    model_name = "wavkan".lower()
-    model = get_model(act=act,model_name=model_name).to(device)
+    model_name = "pinn".lower()
+    model = get_model(act=act,model_name = model_name).to(device)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
-    trained_model,loss_list = train_lbfgs(model,epochs=40)
-    torch.save(trained_model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
+    N_inside = 1000
+    N_boundary = 200
+    x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
+    # trained_model,loss_list = train_adam( model,x,y,
+    #                                       boundary_x,
+    #                                       boundary_y  
+    #                                       )
+    model,loss_list = train_lbfgs(model,x,y,
+                                          boundary_x,
+                                          boundary_y,  
+                                          epochs=40)
+    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
     plot_loss(loss_list,save_path = os.path.join(loss_save_path,f"{model_name}_loss.png"))
-    print(f"Number of parameters: {sum(p.numel() for p in trained_model.parameters() if p.requires_grad)}")
+    print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     
