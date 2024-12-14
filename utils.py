@@ -45,7 +45,6 @@ def get_data(x_range, y_range, x_num, y_num):
 
     x_mesh, t_mesh = np.meshgrid(x,t)
     data = np.concatenate((np.expand_dims(x_mesh, -1), np.expand_dims(t_mesh, -1)), axis=-1) 
-    # data (x_num, y_num, 2)
     
     b_left = data[0,:,:] 
     b_right = data[-1,:,:]

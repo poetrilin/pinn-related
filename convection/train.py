@@ -1,3 +1,7 @@
+"""  
+PINN for 1-D Convection Problem
+"""
+
 import os
 from typing import Literal
 import torch
@@ -6,9 +10,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import sys 
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from utils import set_seed,get_model
+from utils import set_seed, get_model, get_data
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
@@ -16,50 +19,52 @@ else:
     device = torch.device("cpu")
 
 set_seed(seed=42)
+BETA = 40  # convective term coefficient
 
-# 定义泊松方程的右端项 f(x, y)
-def f(x, y):
-    return torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
-
-# 定义真实解（用于误差分析），泊松方程的解析解假设为：
-def true_solution(x, y):
-    return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
+def true_solution(x, t):
+    return torch.sin(x - BETA * t)
 
 # 定义损失函数
-def loss_function(model, x, y, boundary_x, boundary_y):
+def loss_function(model, x , t , 
+                  x_lower , t_lower, 
+                  x_left, t_left, 
+                  x_right, t_right):
     # 内部点的损失
     x.requires_grad_(True)
-    y.requires_grad_(True)
-    u = model(torch.cat((x, y), dim=1))
-    grads = torch.autograd.grad(u, [x, y], grad_outputs=torch.ones_like(u), create_graph=True)
-    u_x, u_y = grads
-    u_xx = torch.autograd.grad(u_x, x, grad_outputs=torch.ones_like(u_x), create_graph=True)[0]
-    u_yy = torch.autograd.grad(u_y, y, grad_outputs=torch.ones_like(u_y), create_graph=True)[0]
-    equation_loss = torch.mean((u_xx + u_yy + f(x, y)) ** 2)
+    t.requires_grad_(True)
+    u = model(torch.cat((x, t), dim=1))
+    grads = torch.autograd.grad(u, [x, t], grad_outputs=torch.ones_like(u), create_graph=True)
+    u_x, u_t = grads
+
+    loss_res = u_t + BETA * u_x 
+
+    loss_ic = model(torch.cat((x_lower, t_lower), dim=1)) - torch.sin(x_lower)
+
+    loss_bc = model(torch.cat((x_left, t_left), dim=1)) - model(torch.cat((x_right, t_right), dim=1))
 
     # 边界点的损失
-    boundary_u = model(torch.cat((boundary_x, boundary_y), dim=1))
-    boundary_loss = torch.mean(boundary_u ** 2)  # Dirichlet条件：u=0
-
-    return equation_loss +  boundary_loss
+    return loss_res + loss_bc + loss_ic
 
 # 生成训练数据
-def generate_data(N_inside, N_boundary):
-    # 内部点
+def generate_data(N_inside, N_boundary,x_max = 2*torch.pi, t_max = 1):
     x = torch.rand(N_inside, 1, requires_grad=True).to(device)
-    y = torch.rand(N_inside, 1, requires_grad=True).to(device)
-    # 边界点
-    boundary_x = torch.cat(
-        (torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1), torch.rand(N_boundary, 1), torch.rand(N_boundary, 1))).to(device)
-    boundary_y = torch.cat(
-        (torch.rand(N_boundary, 1), torch.rand(N_boundary, 1), torch.zeros(N_boundary, 1), torch.ones(N_boundary, 1))).to(device)
-    return x, y, boundary_x, boundary_y
+    t = torch.rand(N_inside, 1, requires_grad=True).to(device)
+
+    x_lower = x_max *torch.rand(N_boundary, 1).to(device)
+    t_lower = torch.zeros(N_boundary, 1).to(device)
+    x_left =  torch.zeros(N_boundary, 1).to(device)
+    t_left =  t_max * torch.rand(N_boundary, 1).to(device)
+    x_right = x_max * torch.ones(N_boundary, 1).to(device) 
+    t_right = t_max * torch.rand(N_boundary, 1).to(device)
+
+    return x,t, x_lower , t_lower, x_left, t_left, x_right, t_right
 
 # train PINN with Adam optimizer
 def train_adam(model,
                x,y,
-               boundary_x,
-               boundary_y,
+               x_lower , t_lower,
+                x_left, t_left, 
+                x_right, t_right,
                *,
                epochs =30000,
                lr=1e-4,
@@ -70,7 +75,7 @@ def train_adam(model,
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs, eta_min=1e-8)
     for epoch in tqdm(range(1, epochs + 1),total=epochs,desc="Training with Adam"):
         optimizer.zero_grad()
-        loss = loss_function(model, x, y, boundary_x, boundary_y)
+        loss = loss_function(model, x, y, x_lower , t_lower, x_left, t_left, x_right, t_right)
         loss.backward()
         optimizer.step()
         lr_scheduler.step()
@@ -84,8 +89,9 @@ def train_adam(model,
 # train PINN with LBFGS optimizer
 def train_lbfgs(model,
                 x,y,
-               boundary_x,
-               boundary_y,
+                 x_lower , t_lower,
+                 x_left, t_left, 
+                 x_right, t_right,
                *,
                epochs = 11000,
                lr=1e-5,
@@ -96,7 +102,7 @@ def train_lbfgs(model,
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,T_max=epochs,eta_min=0)
     def closure():
         optimizer.zero_grad()
-        loss = loss_function(model, x, y, boundary_x, boundary_y)
+        loss = loss_function(model, x, y,x_lower , t_lower, x_left, t_left, x_right, t_right)
         loss.backward()
         return loss
     
@@ -109,7 +115,7 @@ def train_lbfgs(model,
             print(f"LBFGS Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
-    return model,loss_list
+    return model, loss_list
 
 
 def plot_loss(loss_list,save_path = None,log_scale = True):  
@@ -138,15 +144,16 @@ if __name__ == "__main__":
         os.makedirs(loss_save_path)
     N_inside = 1000
     N_boundary = 200
-    x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
-    adam_trained_flag = False
+    x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
+    adam_trained_flag = True
     if adam_trained_flag:
         model.load_state_dict(torch.load(os.path.join(model_save_path,f"{model_name}-adam.pth")))
     else:
         trained_model,loss_list_adam = train_adam( model,
                                                 x,y,
-                                            boundary_x,
-                                            boundary_y  
+                                                x_lower ,  t_lower,
+                                              x_left, t_left, 
+                                              x_right, t_right  
                                             )
         print(f"Period 1 end, Loss: {loss_list_adam[-1]:.6e}")
         torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-adam.pth"))
@@ -154,8 +161,7 @@ if __name__ == "__main__":
     
     
     model, loss_list_lbfgs = train_lbfgs( model,x,y,
-                                          boundary_x,
-                                          boundary_y,
+                                          x_lower , t_lower, x_left, t_left, x_right, t_right,
                                           lr=1e-5
                                           )
     torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
