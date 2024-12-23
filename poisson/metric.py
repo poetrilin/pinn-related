@@ -4,7 +4,8 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from utils import get_n_paras, ACT, MODELS, set_seed, get_model
+from utils import get_n_paras
+from models import get_model
 
 def true_solution(x, y):
     return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
