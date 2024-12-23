@@ -1,5 +1,4 @@
 import os
-from typing import Literal
 import torch
 import torch.nn as nn
 import numpy as np
@@ -8,13 +7,16 @@ from tqdm import tqdm
 import sys 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from utils import set_seed,get_model
+from utils import set_seed
+from models import get_model
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
+    torch.cuda.set_device(device)
 else:
     device = torch.device("cpu")
 
+print(f"Using {device}")
 set_seed(seed=42)
 
 # 定义泊松方程的右端项 f(x, y)

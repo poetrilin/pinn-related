@@ -3,7 +3,6 @@ import torch.nn as nn
 import numpy as np
 import sys 
 sys.path.append('..')
-from mytype import ACT
 
 
 
@@ -23,7 +22,7 @@ class SinAct(nn.Module):
 # 定义PINN模型
 class PINN(nn.Module):
     def __init__(self,
-                 activation:ACT="tanh",
+                 activation="tanh",
                  d_in:int=2,
                  d_out:int=1,
                  d_hidden:int=64,
