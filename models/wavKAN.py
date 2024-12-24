@@ -11,11 +11,6 @@ from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import torchvision
-import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
-from tqdm import tqdm
 import math
 
 class KANLinear(nn.Module):

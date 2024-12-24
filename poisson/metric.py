@@ -25,7 +25,7 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
     rMAE = torch.mean(torch.abs(u_pred - u_true)) / torch.mean(torch.abs(u_true))
     rRMSE = torch.norm(u_pred - u_true) / torch.norm(u_true)
     print(f"Relative MAE:   {rMAE.item():.4e}")
-    print(f"Relative Error: {rRMSE.item():.4e}")
+    print(f"Relative RMSE: {rRMSE.item():.4e}")
     if plot_flag == True:
         fig, ax = plt.subplots(1, 3, figsize=(15, 5))
         ax[0].contourf(X_mesh, Y_mesh, u_true.reshape(test_points, test_points).cpu().numpy(), cmap="viridis")
@@ -39,7 +39,7 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
 
 
 if __name__ == "__main__":
-    model_name = "pinn"
+    model_name = "powermlp"
     model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
     model = get_model(model_name=model_name)
 
