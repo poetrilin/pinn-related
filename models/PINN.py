@@ -5,12 +5,10 @@ import numpy as np
 import sys 
 sys.path.append('..')
 
-
-
 class SinAct(nn.Module):
     """
-    for high frequency,you can substitute the first layer with this activation function
-    @ baseline implementation of First Layer Sine
+    for high frequency, you can substitute the first layer with this activation function
+    @ implementation of First Layer Sine
     @ paper: Learning in Sinusoidal Spaces with Physics-Informed Neural Networks
     @ link: https://arxiv.org/abs/2109.09338
     """

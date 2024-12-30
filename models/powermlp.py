@@ -1,9 +1,5 @@
-from typing import List
-import torch
-import math
-import torch.nn as nn
-import torch.nn.functional as F
-from tqdm import tqdm
+from typing import List 
+import torch.nn as nn 
 import sys 
 sys.path.append('..')
 from utils import check_and_convert_to_int
@@ -17,7 +13,7 @@ class RePU(nn.Module):
     def forward(self, x):
         return self.relu(x) ** self.n
     
-    
+
 class ResSiLU(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(ResSiLU, self).__init__()
@@ -27,6 +23,7 @@ class ResSiLU(nn.Module):
     def init_weights(self):
         nn.init.xavier_uniform_(self.fc.weight)
 
+    # return: out = W SiLU(x) 
     def forward(self, x):
         out = self.silu(x)
         out = self.fc(out)
@@ -34,10 +31,7 @@ class ResSiLU(nn.Module):
 
 
 class ResRePUBlock(nn.Module):
-    def __init__(self, input_dim, output_dim, repu_order, res=True):
-        r""" 
-        @ out = W_1 SiLU(x) + ReLU-k(W_2 x+ bias )
-        """
+    def __init__(self, input_dim, output_dim, repu_order, res=True): 
         super(ResRePUBlock, self).__init__()
         self.fc = nn.Linear(input_dim, output_dim)
         self.repu = RePU(repu_order)
@@ -52,6 +46,7 @@ class ResRePUBlock(nn.Module):
             self.res.init_weights()
     
     def forward(self, x):
+    #  return: W_1 SiLU(x) + RePU(W_2 x + bias)
         residual = x
         out = self.fc(x)
         out = self.repu(out)

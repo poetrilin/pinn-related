@@ -6,6 +6,7 @@ from tqdm import tqdm
 import sys 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from plotting import plot_loss
 from utils import set_seed
 from models import get_model
 
@@ -18,12 +19,8 @@ print(f"Using {device}")
 set_seed(seed=42)
 
 # Equation: -u_xx - u_yy = f(x, y)
-
 def f(x, y):
     return torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
-
-def true_solution(x, y):
-    return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
 
 # 定义损失函数
 def loss_function(model, x, y, boundary_x, boundary_y):
@@ -122,23 +119,14 @@ def train_lbfgs(model,
     return model,loss_list
 
 
-def plot_loss(loss_list,save_path = None,log_scale = True):  
-    plt.plot(loss_list)
-    plt.xlabel("Epoch")
-    if log_scale:
-        plt.yscale("log")
-    plt.ylabel("Loss")
-    plt.title("Training Loss Curve")
-    if isinstance(save_path,str):
-        plt.savefig(save_path)
-    else:
-        plt.show()
-    plt.close()
+
 # 训练并验证
 if __name__ == "__main__":
-    act = "tanh".lower()
-    model_name = "powermlp".lower()
-    model = get_model(act=act,model_name = model_name).to(device)
+    model_name = "pinn".lower()
+    problem_str = "poisson"
+    model = get_model(model_name = model_name, input_dim=2, output_dim=1, 
+                      problem=problem_str 
+                      ).to(device)
     print(f"Model: {model_name} ,Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     # save model
     model_save_path = os.path.join(__file__,"../trained_models")
@@ -176,7 +164,7 @@ if __name__ == "__main__":
     time_lbfgs = time_end - time_2
     print(f"L-BFGS training time: {time_lbfgs:.2f}s")
     print(f"Total training time: {time_end - time_start:.2f}s")
-    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
+    torch.save(model.state_dict(), os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
   
     plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))

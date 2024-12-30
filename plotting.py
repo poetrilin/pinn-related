@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib as mpl
-#mpl.use('pgf')
 
 def figsize(scale, nplots = 1):
     fig_width_pt = 390.0                          # Get this from LaTeX using \the\textwidth
@@ -34,6 +33,19 @@ mpl.rcParams.update(pgf_with_latex)
 
 import matplotlib.pyplot as plt
 
+def plot_loss(loss_list,save_path = None,log_scale = True):  
+    plt.plot(loss_list)
+    plt.xlabel("Epoch")
+    if log_scale:
+        plt.yscale("log")
+    plt.ylabel("Loss")
+    plt.title("Training Loss Curve")
+    if isinstance(save_path,str):
+        plt.savefig(save_path)
+    else:
+        plt.show()
+    plt.close()
+
 # I make my own newfig and savefig functions
 def newfig(width, nplots = 1):
     fig = plt.figure(figsize=figsize(width, nplots))
@@ -50,22 +62,24 @@ def savefig(filename, crop = True):
         plt.savefig('{}.pdf'.format(filename))
         plt.savefig('{}.eps'.format(filename))
 
-# Simple plot
-fig, ax  = newfig(1.0)
 
-def ema(y, a):
-   s = []
-   s.append(y[0])
-   for t in range(1, len(y)):
-       s.append(a * y[t] + (1-a) * s[t-1])
-   return np.array(s)
-   
-y = [0]*200
-y.extend([20]*(1000-len(y)))
-s = ema(y, 0.01)
+if __name__ == '__main__':
+    # Simple plot
+    fig, ax  = newfig(1.0)
 
-ax.plot(s)
-ax.set_xlabel('X Label')
-ax.set_ylabel('EMA')
+    def ema(y, a):
+        s = []
+        s.append(y[0])
+        for t in range(1, len(y)):
+            s.append(a * y[t] + (1-a) * s[t-1])
+        return np.array(s)
+    
+    y = [0]*200
+    y.extend([20]*(1000-len(y)))
+    s = ema(y, 0.01)
 
-savefig('ema')
+    ax.plot(s)
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('EMA')
+
+    savefig('ema')
