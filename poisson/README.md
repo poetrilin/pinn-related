@@ -14,83 +14,14 @@ according to PINN's theorem ,
 Here we simply let $L=Loss_{res}+Loss_{bc}$ .
 
 
-## Models 
+## Result
 
-1. PINN
+| Models  | Paras | Loss | rMAE | rRMSE | Training Time |
+| :----:  | :----: | :----: | :----: | :----: | :----: |
+| PINN    |  12737 | 7.049e-07| 3.324e-03 |3.282e-03|170.79s|
+| KAN     | 16720| 1.164349e-08 | 1.6987e-03 | 1.6362e-03| 1903.70s |
+| PowerMLP-3-order| 2193 |3.851e-06| 4.6100e-03 | 5.4085e-03|329.17s|
+| PowerMLP-4-order| 4353 |3.2919e-06| 1.8849e-02|2.2791e-02|519.71s|
 
-parameters:
-```bash
-- n_hidden: 64
-- n_hideen_layers: 3
-- Optimizer: L-BFGS
-- lr: 5e-2
-- Epochs: 40
-```
-RESULT:
-```bash
-Relative Error: 1.7344e-02
-rMAE: 1.9115e-02
-rRMSE: 1.7344e-02
-Number of parameters: 12737
-```
 
-2. FLS
-   
-(just let first activation function to be sin)
-
-RESULT:
-
-```bash
-Epoch 40, Loss: 1.243544e-06
-Relative Error: 9.7897e-03
-rMAE: 9.6162e-03
-rRMSE: 9.7897e-03
-Number of parameters: 12737
-```
-
-3. Pinnformer
-   
-RESULT:
-
-```bash
-Relative Error: 9.4299e-02
-rMAE: 1.0884e-01
-rRMSE: 9.4299e-02
-Number of parameters: 31609
-```
-
-??It seems that the Pinnformer is not well trained, maybe due to that the model is small?
-
-4. kan
-
-```bash
-Relative Error: 3.3851e-02
-rMAE: 2.8908e-02
-rRMSE: 3.3851e-02
-Number of parameters: 10560
-# 但是训练时间久，约为3倍？
-```
-
-5. rbfkan
-    
-不好训,可能不收敛,alpha 如何确定？
-
-```bash
-Relative Error: 7.4790e-02
-rMAE: 6.6253e-02
-rRMSE: 7.4790e-02
-Number of parameters: 8288
-```
-
-6. fftkan
-
-```bash
-Relative Error: 3.0648e-02
-rMAE: 2.8069e-02
-rRMSE: 3.0648e-02
-Number of parameters: 11265
-```
-
-7. wavkan
-
-```bash
+PowerMLP,很容易过拟合，宽度大一点，Loss降不下去但是rMAE和rRMSE 更差

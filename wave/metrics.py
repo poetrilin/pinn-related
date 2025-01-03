@@ -6,9 +6,12 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import get_n_paras
 from models import get_model
+from settings import BETA
 
 def true_solution(x, y):
-    return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
+    # u(x,t)=sin(πx)cos(2πt)+ 0.5sin(βπx)cos(2βπt)
+    return ( torch.sin(torch.pi*x)*torch.cos(2*torch.pi*y) + 0.5*torch.sin(BETA*torch.pi*x)*torch.cos(2*BETA*torch.pi*y) )
+
 def sampling(nx:int,ny:int):
     x = torch.linspace(0, 1, nx).view(-1, 1)
     y = torch.linspace(0, 1, ny).view(-1, 1)
@@ -43,7 +46,7 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
 
 if __name__ == "__main__":
     model_name = "pinn"
-    problem_str = "poisson"
+    problem_str = "wave"
     model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
     model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str)
 

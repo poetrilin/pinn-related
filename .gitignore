@@ -12,3 +12,4 @@ img*
 *.png
 
 test*
+.vscode*

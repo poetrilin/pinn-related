@@ -1,28 +1,26 @@
-"""  
-PINN for 1-D Convection Problem
+"""   
+1-D Convection Problem
 """
 
 import os
-from typing import Literal
 import torch
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import sys 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from utils import set_seed, get_model, get_data
+sys.path.append(os.path.join(os.path.dirname(__file__), '..')) 
+from plotting import plot_loss
+from utils import set_seed
+from models import get_model
+from settings import BETA,SEED
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
 else:
     device = torch.device("cpu")
 
-set_seed(seed=42)
-BETA = 40  # convective term coefficient
-
-def true_solution(x, t):
-    return torch.sin(x - BETA * t)
+set_seed(seed=SEED)
 
 # 定义损失函数
 def loss_function(model, x , t , 
@@ -32,21 +30,20 @@ def loss_function(model, x , t ,
     # 内部点的损失
     x.requires_grad_(True)
     t.requires_grad_(True)
-    u = model(torch.cat((x, t), dim=1))
+    u = model(torch.cat((x, t), dim=1))      
     grads = torch.autograd.grad(u, [x, t], grad_outputs=torch.ones_like(u), create_graph=True)
     u_x, u_t = grads
 
-    loss_res = u_t + BETA * u_x 
+    loss_res = torch.mean((u_t + BETA * u_x)**2 )
 
-    loss_ic = model(torch.cat((x_lower, t_lower), dim=1)) - torch.sin(x_lower)
-
-    loss_bc = model(torch.cat((x_left, t_left), dim=1)) - model(torch.cat((x_right, t_right), dim=1))
+    loss_ic = torch.mean((model(torch.cat((x_lower, t_lower), dim=1)) - torch.sin(x_lower))**2)
+    loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)) - model(torch.cat((x_right, t_right), dim=1)))**2)
 
     # 边界点的损失
-    return loss_res + loss_bc + loss_ic
+    return loss_res + 0.1*loss_bc + 0.1*loss_ic
 
 # 生成训练数据
-def generate_data(N_inside, N_boundary,x_max = 2*torch.pi, t_max = 1):
+def generate_data(N_inside, N_boundary, x_max = 2*torch.pi, t_max = 1):
     x = torch.rand(N_inside, 1, requires_grad=True).to(device)
     t = torch.rand(N_inside, 1, requires_grad=True).to(device)
 
@@ -57,17 +54,17 @@ def generate_data(N_inside, N_boundary,x_max = 2*torch.pi, t_max = 1):
     x_right = x_max * torch.ones(N_boundary, 1).to(device) 
     t_right = t_max * torch.rand(N_boundary, 1).to(device)
 
-    return x,t, x_lower , t_lower, x_left, t_left, x_right, t_right
+    return x, t , x_lower , t_lower, x_left, t_left, x_right, t_right
 
 # train PINN with Adam optimizer
 def train_adam(model,
                x,y,
-               x_lower , t_lower,
+                x_lower , t_lower,
                 x_left, t_left, 
                 x_right, t_right,
                *,
-               epochs =30000,
-               lr=1e-4,
+               epochs =10000,
+               lr=5e-4,
                verbose = True):
     
     loss_list = []
@@ -84,6 +81,9 @@ def train_adam(model,
             print(f"Adam Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
+        if epoch >= 1000 and abs(loss_list[-1]-loss_list[-2])< 1e-16:
+            print(f"Early stopping at epoch {epoch}, Loss: {loss.item():.6e}")
+            break 
     return model,loss_list
 
 # train PINN with LBFGS optimizer
@@ -93,7 +93,7 @@ def train_lbfgs(model,
                  x_left, t_left, 
                  x_right, t_right,
                *,
-               epochs = 11000,
+               epochs = 2000,
                lr=1e-5,
                verbose = True):
     loss_list = []
@@ -111,10 +111,13 @@ def train_lbfgs(model,
         lr_scheduler.step()
         loss = closure()
         loss_list.append(loss.item())
-        if epoch % 1000 == 0 and verbose:
+        if epoch % 500 == 0 and verbose:
             print(f"LBFGS Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
+        if epoch >= 50 and abs(loss_list[-1]-loss_list[-2])< 1e-17:
+            print(f"Early stopping at epoch {epoch}, Loss: {loss:.6e}")
+            break
     return model, loss_list
 
 
@@ -132,9 +135,9 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
     plt.close()
 # 训练并验证
 if __name__ == "__main__":
-    act = "tanh".lower()
-    model_name = "pinn".lower()
-    model = get_model(act=act,model_name = model_name).to(device)
+    model_name = "kan".lower()
+    problem_str = "convection"
+    model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str).to(device)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
     if not os.path.exists(model_save_path):
@@ -142,10 +145,10 @@ if __name__ == "__main__":
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
-    N_inside = 1000
-    N_boundary = 200
+    N_inside = 3000
+    N_boundary = 600
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
-    adam_trained_flag = True
+    adam_trained_flag = False
     if adam_trained_flag:
         model.load_state_dict(torch.load(os.path.join(model_save_path,f"{model_name}-adam.pth")))
     else:

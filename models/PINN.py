@@ -1,15 +1,14 @@
+from typing import List
 import torch
 import torch.nn as nn
 import numpy as np
 import sys 
 sys.path.append('..')
 
-
-
 class SinAct(nn.Module):
     """
-    for high frequency,you can substitute the first layer with this activation function
-    @ baseline implementation of First Layer Sine
+    for high frequency, you can substitute the first layer with this activation function
+    @ implementation of First Layer Sine
     @ paper: Learning in Sinusoidal Spaces with Physics-Informed Neural Networks
     @ link: https://arxiv.org/abs/2109.09338
     """
@@ -22,36 +21,20 @@ class SinAct(nn.Module):
 # 定义PINN模型
 class PINN(nn.Module):
     def __init__(self,
-                 activation="tanh",
-                 d_in:int=2,
-                 d_out:int=1,
-                 d_hidden:int=64,
-                 n_layer_hidden:int=3
+                 layers:List[int],
+                 is_fls:bool = False,
                  ):
         super(PINN, self).__init__()
-        match activation:
-            # to use mathc-case, python version >= 3.10
-            case "relu":
-                self.act = nn.ReLU()
-            case "tanh":
-                self.act = nn.Tanh()
-            case "sigmoid":
-                self.act = nn.Sigmoid()
-            case "silu":
-                self.act = nn.SiLU()
-            case "gelu":
-                self.act = nn.GELU()
-            case "leakyrelu":    
-                self.act = nn.LeakyReLU()
+        self.act = nn.Tanh()
         self.layers = nn.Sequential(
-            nn.Linear(d_in, d_hidden),
-            self.act,
-            *[nn.Sequential(
-                nn.Linear(d_hidden, d_hidden),
-                self.act
-            ) for _ in range(n_layer_hidden)],
-            nn.Linear(d_hidden, d_out)
-        )
+            nn.Linear(layers[0], layers[1]),
+            is_fls and SinAct() or self.act )
+        
+        for i in range(1, len(layers) - 2):
+            self.layers.append(nn.Linear(layers[i], layers[i + 1]))
+            self.layers.append(self.act)
+        
+        self.layers.append(nn.Linear(layers[-2], layers[-1]))
 
     def forward(self, x):
         """ 
@@ -59,3 +42,6 @@ class PINN(nn.Module):
         """
         return self.layers(x)
 
+if __name__ == '__main__':
+    model = PINN([2, 20, 20, 20, 20, 20, 20, 1],is_fls = True)
+    print(model)
