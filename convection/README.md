@@ -14,3 +14,5 @@ according to PINN's theorem :
 - $Loss_{bc}= ||u(0,t)-u(2\pi,t)||^2$.
 
 Here we simply let $L=Loss_{res}+Loss_{bc}+Loss_{ic}$
+
+# Results

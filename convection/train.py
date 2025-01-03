@@ -1,5 +1,5 @@
-"""  
-PINN for 1-D Convection Problem
+"""   
+1-D Convection Problem
 """
 
 import os
@@ -40,7 +40,7 @@ def loss_function(model, x , t ,
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)) - model(torch.cat((x_right, t_right), dim=1)))**2)
 
     # 边界点的损失
-    return loss_res + 0.5*loss_bc + 0.5*loss_ic
+    return loss_res + 0.1*loss_bc + 0.1*loss_ic
 
 # 生成训练数据
 def generate_data(N_inside, N_boundary, x_max = 2*torch.pi, t_max = 1):
@@ -63,7 +63,7 @@ def train_adam(model,
                 x_left, t_left, 
                 x_right, t_right,
                *,
-               epochs =20000,
+               epochs =10000,
                lr=5e-4,
                verbose = True):
     
@@ -135,7 +135,7 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
     plt.close()
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "pinn".lower()
+    model_name = "kan".lower()
     problem_str = "convection"
     model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str).to(device)
     # save model
@@ -145,8 +145,8 @@ if __name__ == "__main__":
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
-    N_inside = 1000
-    N_boundary = 200
+    N_inside = 3000
+    N_boundary = 600
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
     adam_trained_flag = False
     if adam_trained_flag:

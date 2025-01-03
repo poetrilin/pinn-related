@@ -248,23 +248,20 @@ class KANLinear(torch.nn.Module):
 class KAN(nn.Module):
     def __init__(
         self,
-        input_dim=1, 
-        output_dim=1, 
-        hidden_dim=128, 
-        num_layers=3,
+        layers,
         grid_size=50,
         spline_order=3,
-        scale_noise=0.1,
+        scale_noise = 0.1,
         scale_base=1.0,
         scale_spline=1.0,
-        base_activation=torch.nn.SiLU,
+        base_activation = torch.nn.SiLU,
         grid_eps=0.02,
         grid_range=[-1, 1],
     ):
         super(KAN, self).__init__()
         self.grid_size = grid_size
         self.spline_order = spline_order
-        layers_hidden=[input_dim] + [hidden_dim] * num_layers + [output_dim]
+        layers_hidden= layers
         
         self.layers = torch.nn.ModuleList()
         for in_features, out_features in zip(layers_hidden, layers_hidden[1:]):

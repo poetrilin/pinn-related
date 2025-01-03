@@ -29,9 +29,11 @@ class PINN(nn.Module):
         self.layers = nn.Sequential(
             nn.Linear(layers[0], layers[1]),
             is_fls and SinAct() or self.act )
+        
         for i in range(1, len(layers) - 2):
             self.layers.append(nn.Linear(layers[i], layers[i + 1]))
             self.layers.append(self.act)
+        
         self.layers.append(nn.Linear(layers[-2], layers[-1]))
 
     def forward(self, x):
