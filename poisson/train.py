@@ -138,7 +138,7 @@ if __name__ == "__main__":
     N_inside = 1000
     N_boundary = 200
     x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
-    adam_trained_flag = True
+    adam_trained_flag = False
     time_start = time.time()
     if adam_trained_flag:
         model.load_state_dict(torch.load(os.path.join(model_save_path,f"{model_name}-adam.pth")))

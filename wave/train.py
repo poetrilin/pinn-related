@@ -30,6 +30,7 @@ def loss_function(model, x , t ,
     # 内部点的损失
     x.requires_grad_(True)
     t.requires_grad_(True)
+    t_lower.requires_grad_(True)
     u = model(torch.cat((x, t), dim=1))      
     grads = torch.autograd.grad(u, [x, t], grad_outputs=torch.ones_like(u), create_graph=True)
     u_x, u_t = grads
@@ -41,7 +42,7 @@ def loss_function(model, x , t ,
 
     loss_ic = torch.mean( (pred_low - torch.sin(torch.pi*x_lower) 
                           - 0.5*torch.sin(BETA*torch.pi*x_lower) )**2)
-    u_t_x0 = torch.autograd.grad(pred_low,t,grad_outputs=torch.ones_like(pred_low),create_graph=True)[0]
+    u_t_x0 = torch.autograd.grad(pred_low,t_lower, grad_outputs=torch.ones_like(pred_low),create_graph=True,allow_unused=True)[0]
     loss_ic += torch.mean(u_t_x0**2)
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)))**2) + \
                     torch.mean((model(torch.cat((x_right, t_right), dim=1)))**2)
@@ -71,7 +72,7 @@ def train_adam(model,
                 x_right, t_right,
                *,
                epochs =20000,
-               lr=5e-4,
+               lr=2e-3,
                verbose = True):
     
     loss_list = []
