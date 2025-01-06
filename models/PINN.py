@@ -37,8 +37,7 @@ class PINN(nn.Module):
         self.layers.append(nn.Linear(layers[-2], layers[-1]))
         def init_weights(m):
             if type(m) == nn.Linear:
-                nn.init.xavier_normal_(m.weight)
-                m.bias.data.fill_(0.01)
+                nn.init.xavier_normal_(m.weight) 
         self.layers.apply(init_weights)
 
     def forward(self, x):

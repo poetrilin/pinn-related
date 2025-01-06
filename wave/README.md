@@ -12,9 +12,9 @@ $$
 \end{aligned} 
 $$
 
-Here, we are specifying β = 3.The equation has a simple analytical solution:
+Here, we are specifying β = 1.The equation has a simple analytical solution:
 $$
-u(x, t) = \sin(\pi x) cos(2\pi t) + \frac{1}{2}\sin(\beta \pi x) \cos(2\beta \pi t)
+u(x, t) = \sin(\pi x) \cos(\pi \sqrt{\beta} t) + \frac{1}{2} \sin(\beta \pi x) \cos(\beta \pi \sqrt{\beta} t).
 $$
 
 

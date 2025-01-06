@@ -40,7 +40,7 @@ def loss_function(model, x , t ,
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)) - model(torch.cat((x_right, t_right), dim=1)))**2)
 
     # 边界点的损失
-    return loss_res + 0.1*loss_bc + 0.1*loss_ic
+    return loss_res + 0.1*loss_bc + 0.05*loss_ic
 
 # 生成训练数据
 def generate_data(N_inside, N_boundary, x_max = 2*torch.pi, t_max = 1):
