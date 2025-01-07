@@ -21,3 +21,13 @@ $$
 - $Loss_{res} = || u_{tt}-\beta u_{xx}||^2$
 - $Loss_{ic} = ||u(x,0)-\sin(\pi x) - \frac{1}{2}\sin(\beta \pi x)||^2 + ||u_t(x,0)||^2$
 - $Loss_{bc} = ||u(0,t)||^2 + ||u(1,t)||^2$ 
+
+Loss = $Loss_{res} + 0.5 Loss_{ic} + 0.4 Loss_{bc}$
+# Results
+
+| Models  | Paras | Loss | rMAE | rRMSE | 
+| :----:  | :----: | :----: | :----: | :----: | 
+|Pinn |14689|1.070975e-05|3.1847e-03 |3.1537e-03|
+|kan-SiLU|11660|4.309552e-05| 1.5055e-03|1.4048e-03|
+|kan-Mish|11660|3.963015e-05| 2.9726e-03|3.0355e-03|
+|powermlp|16737|5.155272e-05|2.3757e-03|2.3717e-03|

@@ -1,7 +1,7 @@
 """  
 1-D Wave Problem
 """
-
+import time
 import os
 import torch
 import torch.nn as nn
@@ -44,14 +44,15 @@ def loss_function(model, x , t ,
                           - 0.5*torch.sin(BETA*torch.pi*x_lower) )**2)
     u_t_x0 = torch.autograd.grad(pred_low,t_lower, grad_outputs=torch.ones_like(pred_low),create_graph=True,allow_unused=True)[0]
     loss_ic += torch.mean(u_t_x0**2)
+    
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)))**2) + \
                     torch.mean((model(torch.cat((x_right, t_right), dim=1)))**2)
 
     # 边界点的损失
-    return loss_res + 0.5*loss_bc + 0.2*loss_ic
+    return loss_res + 0.5*loss_bc + 0.4*loss_ic
 
 # 生成训练数据
-def generate_data(N_inside, N_boundary, x_max = 2*torch.pi, t_max = 1):
+def generate_data(N_inside, N_boundary, x_max = 1, t_max = 1):
     x = torch.rand(N_inside, 1, requires_grad=True).to(device)
     t = torch.rand(N_inside, 1, requires_grad=True).to(device)
 
@@ -119,6 +120,7 @@ def train_lbfgs(model,
         lr_scheduler.step()
         loss = closure()
         loss_list.append(loss.item())
+
         if epoch % 50 == 0 and verbose:
             print(f"LBFGS Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50  vand epoch % 20 == 0:
@@ -155,7 +157,7 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
 
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "kan".lower()
+    model_name = "powermlp".lower()
     problem_str = "wave"
     model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str).to(device)
     # save model
@@ -168,25 +170,28 @@ if __name__ == "__main__":
     N_inside = 2000
     N_boundary = 400
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
+    time_start = time.time()
     model,loss_list_adam = train_adam(  model,
                                         x,y,
                                         x_lower ,  t_lower,
                                         x_left, t_left, 
                                         x_right, t_right,
                                         lr=5e-4,
-                                        epochs=30000,  
+                                        epochs=20000,  
                                         )
     model, loss_list_lbfgs = train_lbfgs( model,x,y,
                                           x_lower , t_lower, x_left, t_left, x_right, t_right,
-                                          lr=1e-5,
+                                          lr=1e-6,
                                           epochs = 2000,
                                           )
     
-    
+    time_end = time.time()
+
+    print(f"Training time: {time_end-time_start:.2f} seconds")
     torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth")) 
     # save loss curve
     # loss_lists = dict("adam":loss_list_adam,"lbfgs":loss_list_lbfgs) 
     plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))
 
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-    
+     

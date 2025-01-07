@@ -47,7 +47,7 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
 
 
 if __name__ == "__main__":
-    model_name = "kan"
+    model_name = "powermlp"
     problem_str = "wave"
     model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
     model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str)

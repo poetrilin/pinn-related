@@ -58,7 +58,7 @@ def train_adam(model,
                boundary_x,
                boundary_y,
                *,
-               epochs = 20000,
+               epochs = 30000,
                lr = 5e-4,
                verbose = True):
     
@@ -122,7 +122,7 @@ def train_lbfgs(model,
 
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "pinn".lower()
+    model_name = "powermlp".lower()
     problem_str = "poisson"
     model = get_model(model_name = model_name, input_dim=2, output_dim=1, 
                       problem=problem_str 
