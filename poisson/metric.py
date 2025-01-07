@@ -9,7 +9,7 @@ from models import get_model
 
 def true_solution(x, y):
     return (1 / (2 * torch.pi ** 2)) * torch.sin(torch.pi * x) * torch.sin(torch.pi * y)
-def sampling(nx:int,ny:int):
+def sampling( nx:int, ny:int):
     x = torch.linspace(0, 1, nx).view(-1, 1)
     y = torch.linspace(0, 1, ny).view(-1, 1)
     X_mesh, Y_mesh = torch.meshgrid(x.squeeze(), y.squeeze(),indexing="ij")
@@ -42,7 +42,7 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
 
 
 if __name__ == "__main__":
-    model_name = "pinn"
+    model_name = "kan"
     problem_str = "poisson"
     model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
     model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str)

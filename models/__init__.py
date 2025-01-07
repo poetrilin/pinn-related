@@ -37,13 +37,9 @@ def get_model(
                 case "kan":
                     model = KAN(layers=[input_dim,16,16,output_dim])
                 case "rbfkan":
-                    model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)
-                case "fftkan":
-                    model = fftKAN(inputdim=2,outdim=1,hidden_dim=32,gridsize=5,hidden_layers=1)
-                case "wavkan":
-                    model = wavKAN(layers_hidden=[2,16,32,32,1])
+                    model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)  
                 case "powermlp":
-                    model = PowerMLP(dim_list=[2,16,32,16,1], repu_order= 3)
+                    model = PowerMLP(dim_list=[2,64,64,64,1], repu_order= 3)
         case "convection":
             if input_dim is None:
                 input_dim = 2
@@ -65,11 +61,11 @@ def get_model(
                 output_dim = 1
             match model_name:
                 case "pinn":
-                    model = PINN(layers=[input_dim,16,32,64,32,16,output_dim], is_fls=False)
+                    model = PINN(layers=[input_dim,32,128,128,32,output_dim], is_fls=False)
                 case "pinnsformer":
                     model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
                 case "kan":
-                    model = KAN(layers=[input_dim,6,10,6,output_dim])
+                    model = KAN(layers=[input_dim,8,16,4,output_dim])
                 case "powermlp":
-                    model = PowerMLP(dim_list=[2,16,32,16,1], repu_order= 3)
+                    model = PowerMLP(dim_list=[2,32,64,64,32,1], repu_order= 3)
     return model

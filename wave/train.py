@@ -1,7 +1,7 @@
 """  
 1-D Wave Problem
 """
-
+import time
 import os
 import torch
 import torch.nn as nn
@@ -30,6 +30,7 @@ def loss_function(model, x , t ,
     # 内部点的损失
     x.requires_grad_(True)
     t.requires_grad_(True)
+    t_lower.requires_grad_(True)
     u = model(torch.cat((x, t), dim=1))      
     grads = torch.autograd.grad(u, [x, t], grad_outputs=torch.ones_like(u), create_graph=True)
     u_x, u_t = grads
@@ -41,16 +42,17 @@ def loss_function(model, x , t ,
 
     loss_ic = torch.mean( (pred_low - torch.sin(torch.pi*x_lower) 
                           - 0.5*torch.sin(BETA*torch.pi*x_lower) )**2)
-    u_t_x0 = torch.autograd.grad(pred_low,t,grad_outputs=torch.ones_like(pred_low),create_graph=True)[0]
+    u_t_x0 = torch.autograd.grad(pred_low,t_lower, grad_outputs=torch.ones_like(pred_low),create_graph=True,allow_unused=True)[0]
     loss_ic += torch.mean(u_t_x0**2)
+    
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)))**2) + \
                     torch.mean((model(torch.cat((x_right, t_right), dim=1)))**2)
 
     # 边界点的损失
-    return loss_res + 0.5*loss_bc + 0.5*loss_ic
+    return loss_res + 0.5*loss_bc + 0.4*loss_ic
 
 # 生成训练数据
-def generate_data(N_inside, N_boundary, x_max = 2*torch.pi, t_max = 1):
+def generate_data(N_inside, N_boundary, x_max = 1, t_max = 1):
     x = torch.rand(N_inside, 1, requires_grad=True).to(device)
     t = torch.rand(N_inside, 1, requires_grad=True).to(device)
 
@@ -71,7 +73,7 @@ def train_adam(model,
                 x_right, t_right,
                *,
                epochs =20000,
-               lr=5e-4,
+               lr=2e-3,
                verbose = True):
     
     loss_list = []
@@ -100,8 +102,8 @@ def train_lbfgs(model,
                  x_left, t_left, 
                  x_right, t_right,
                *,
-               epochs = 2000,
-               lr=1e-5,
+               epochs = 200,
+               lr=0.1,
                verbose = True):
     loss_list = []
     # 模型和优化器
@@ -118,9 +120,10 @@ def train_lbfgs(model,
         lr_scheduler.step()
         loss = closure()
         loss_list.append(loss.item())
-        if epoch % 500 == 0 and verbose:
+
+        if epoch % 50 == 0 and verbose:
             print(f"LBFGS Epoch {epoch}, Loss: {loss.item():.6e}")
-        # if epoch >=50 and epoch % 20 == 0:
+        # if epoch >=50  vand epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
         if epoch >= 50 and abs(loss_list[-1]-loss_list[-2])< 1e-17:
             print(f"Early stopping at epoch {epoch}, Loss: {loss:.6e}")
@@ -129,20 +132,32 @@ def train_lbfgs(model,
 
 
 def plot_loss(loss_list,save_path = None,log_scale = True):  
-    plt.plot(loss_list)
-    plt.xlabel("Epoch")
-    if log_scale:
-        plt.yscale("log")
-    plt.ylabel("Loss")
-    plt.title("Training Loss Curve")
+    if isinstance(loss_list, list) and len(loss_list) > 0:
+        plt.plot(loss_list)
+        plt.xlabel("Epoch")
+        if log_scale:
+            plt.yscale("log")
+        plt.ylabel("Loss")
+        plt.title("Training Loss Curve")
+    elif isinstance(loss_list, dict) and len(loss_list) > 0:
+        for key, value in loss_list.items():
+            plt.plot(value, label=key)
+        plt.xlabel("Epoch")
+        if log_scale:
+            plt.yscale("log")
+        plt.ylabel("Loss")
+        plt.title("Training Loss Curve")
+        plt.legend()
+    
     if isinstance(save_path,str):
         plt.savefig(save_path)
     else:
         plt.show()
     plt.close()
+
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "pinn".lower()
+    model_name = "powermlp".lower()
     problem_str = "wave"
     model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str).to(device)
     # save model
@@ -155,29 +170,28 @@ if __name__ == "__main__":
     N_inside = 2000
     N_boundary = 400
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
-    adam_trained_flag = False
-    if adam_trained_flag:
-        model.load_state_dict(torch.load(os.path.join(model_save_path,f"{model_name}-adam.pth")))
-    else:
-        trained_model,loss_list_adam = train_adam( model,
-                                                x,y,
-                                                x_lower ,  t_lower,
-                                              x_left, t_left, 
-                                              x_right, t_right  
-                                            )
-        print(f"Period 1 end, Loss: {loss_list_adam[-1]:.6e}")
-        torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-adam.pth"))
-        plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))    
-    
-    
+    time_start = time.time()
+    model,loss_list_adam = train_adam(  model,
+                                        x,y,
+                                        x_lower ,  t_lower,
+                                        x_left, t_left, 
+                                        x_right, t_right,
+                                        lr=5e-4,
+                                        epochs=20000,  
+                                        )
     model, loss_list_lbfgs = train_lbfgs( model,x,y,
                                           x_lower , t_lower, x_left, t_left, x_right, t_right,
-                                          lr=1e-5
+                                          lr=1e-6,
+                                          epochs = 2000,
                                           )
-    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
-    # save loss curve
     
-    plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))
+    time_end = time.time()
+
+    print(f"Training time: {time_end-time_start:.2f} seconds")
+    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth")) 
+    # save loss curve
+    # loss_lists = dict("adam":loss_list_adam,"lbfgs":loss_list_lbfgs) 
+    plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))
 
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-    
+     
