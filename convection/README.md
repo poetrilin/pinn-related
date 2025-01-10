@@ -1,6 +1,6 @@
 # Convection PDE
 
-Solving 1-D convective equations : $\frac{\partial u}{\partial t}+\beta \frac{\partial u}{\partial x}=0$, where $x\in [0,2\pi],t\in [0,1]$ ,Here we set $\beta =40$ in experiments.
+Solving 1-D convective equations : $\frac{\partial u}{\partial t}+\beta \frac{\partial u}{\partial x}=0$, where $x\in [0,2\pi],t\in [0,1]$ ,Here we set $\beta =4$ in experiments.
 
 - initial condition: $u(x,0)=sin(x)$,
 - boundary condition: $u(0,t) = u(2\pi,t)$.

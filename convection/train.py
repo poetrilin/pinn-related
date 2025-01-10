@@ -63,7 +63,7 @@ def train_adam(model,
                 x_left, t_left, 
                 x_right, t_right,
                *,
-               epochs =10000,
+               epochs = 20000,
                lr=5e-4,
                verbose = True):
     
@@ -145,8 +145,8 @@ if __name__ == "__main__":
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
-    N_inside = 3000
-    N_boundary = 600
+    N_inside = 1000
+    N_boundary = 200
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
     adam_trained_flag = False
     if adam_trained_flag:

@@ -72,7 +72,7 @@ def train_adam(model,
                 x_left, t_left, 
                 x_right, t_right,
                *,
-               epochs =20000,
+               epochs =30000,
                lr=2e-3,
                verbose = True):
     
@@ -177,7 +177,7 @@ if __name__ == "__main__":
                                         x_left, t_left, 
                                         x_right, t_right,
                                         lr=5e-4,
-                                        epochs=20000,  
+                                        epochs=30000,  
                                         )
     model, loss_list_lbfgs = train_lbfgs( model,x,y,
                                           x_lower , t_lower, x_left, t_left, x_right, t_right,
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     time_end = time.time()
 
     print(f"Training time: {time_end-time_start:.2f} seconds")
-    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth")) 
+    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-beta-{BETA}.pth")) 
     # save loss curve
     # loss_lists = dict("adam":loss_list_adam,"lbfgs":loss_list_lbfgs) 
     plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))

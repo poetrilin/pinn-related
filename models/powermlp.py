@@ -8,7 +8,7 @@ class RePU(nn.Module):
     def __init__(self, n):
         super(RePU, self).__init__()
         self.n = n
-        self.relu = nn.ReLU()
+        self.relu = nn.ReLU6()
     
     def forward(self, x):
         return self.relu(x) ** self.n
@@ -17,15 +17,15 @@ class RePU(nn.Module):
 class ResSiLU(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(ResSiLU, self).__init__()
-        self.silu = nn.SiLU()
+        self.base_act = nn.SiLU()
         self.fc = nn.Linear(input_dim, output_dim, bias=False)
 
     def init_weights(self):
         nn.init.xavier_uniform_(self.fc.weight)
 
-    # return: out = W SiLU(x) 
+    # return: out = W base_act(x) 
     def forward(self, x):
-        out = self.silu(x)
+        out = self.base_act(x)
         out = self.fc(out)
         return out
 
