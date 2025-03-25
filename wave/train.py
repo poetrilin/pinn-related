@@ -1,11 +1,10 @@
 """  
 1-D Wave Problem
 """
+import argparse
 import time
 import os
-import torch
-import torch.nn as nn
-import numpy as np
+import torch  
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import sys 
@@ -21,6 +20,16 @@ else:
     device = torch.device("cpu")
 
 set_seed(seed=SEED)
+
+def parse_args():     
+    parser = argparse.ArgumentParser(description="Solve the XX equation using a specified model and parameters.")
+    
+    parser.add_argument('-m', '--model', type=str, choices=['pinn', 'kan', 'powermlp'], required=True, help='Specify the model to use (pinn, kan, powermlp).')
+    parser.add_argument('-a', '--activation', type=str, default='Silu', help='Specify the activation function to use.')
+    parser.add_argument('-beta', type=float, required=True, help='Specify the beta parameter for the equation.')
+    
+    args = parser.parse_args()
+    return args
 
 # 定义损失函数
 def loss_function(model, x , t , 
@@ -73,7 +82,7 @@ def train_adam(model,
                 x_right, t_right,
                *,
                epochs =30000,
-               lr=2e-3,
+               lr=5e-4,   # beta=1 2e-3 , beta=3 5e-4
                verbose = True):
     
     loss_list = []
@@ -159,7 +168,8 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
 if __name__ == "__main__":
     model_name = "powermlp".lower()
     problem_str = "wave"
-    model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str).to(device)
+    act = "silu".lower()
+    model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str,activation = act).to(device)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
     if not os.path.exists(model_save_path):
@@ -188,7 +198,9 @@ if __name__ == "__main__":
     time_end = time.time()
 
     print(f"Training time: {time_end-time_start:.2f} seconds")
-    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-beta-{BETA}.pth")) 
+    save_path = os.path.join(model_save_path,f"{model_name}-{act}-beta-{BETA}.pth")
+    torch.save(model.state_dict(), save_path)
+    print(f"Model saved at {save_path}")
     # save loss curve
     # loss_lists = dict("adam":loss_list_adam,"lbfgs":loss_list_lbfgs) 
     plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))

@@ -166,7 +166,6 @@ if __name__ == "__main__":
     print(f"Total training time: {time_end - time_start:.2f}s")
     torch.save(model.state_dict(), os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
-  
     plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))
 
     

@@ -16,3 +16,33 @@ according to PINN's theorem :
 Here we simply let $L=Loss_{res}+Loss_{bc}+Loss_{ic}$
 
 # Results
+- $\beta = 1$
+
+| Models   | Paras  |  Loss         |  rMAE  | rRMSE |
+| :----:   | :----:     | :----:       | :----: | :----: |
+| pinn     | 21905    |  2.932136e-06                | | |
+| kan-silu | 11660    | 6.877966e-07|||
+| kan-mish | 11660    |  6.531657e-07|||
+| powermlp-silu | 23889| 2.470467e-06 |||
+| powermlp-mish | 23889|   3.028087e-06|||
+
+ 
+- $\beta = 0.1$
+
+| Models   | Paras  |  Loss         |  rMAE  | rRMSE |
+| :----:   | :----:     | :----:       | :----: | :----: |
+| pinn     | 21905    | 1.154541e-06 | | |
+| kan-silu | 11660    |  8.058688e-09  |||
+| kan-mish | 11660    |   4.943538e-09 |||
+| powermlp-silu | 23889 | 1.813292e-06 |||
+| powermlp-mish | 23889|   2.375815e-06 |||
+
+- $\beta = 0.01$
+
+| Models   | Paras  |  Loss         |  rMAE  | rRMSE |
+| :----:   | :----:     | :----:       | :----: | :----: |
+| pinn     | 21905   | 7.984570e-07 |  5.8124e-02|7.9093e-02 |
+| kan-silu | 11660   |   7.731960e-09  |||
+| kan-mish | 11660    |  6.362592e-09 |||
+| powermlp-silu | 23889 |  1.494560e-06 |||
+| powermlp-mish | 23889|  1.031550e-06|||

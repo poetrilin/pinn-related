@@ -1,6 +1,6 @@
 # AI4pde implementation 
 
-
+ [ \text{output}[b, o, x] = \sum_{i} \text{input}[b, i, x] \times \text{weights}[i, o, x] ]
 
 > Reference environment:
 > 

@@ -1,11 +1,9 @@
 """   
 1-D Convection Problem
 """
-
+import time
 import os
-import torch
-import torch.nn as nn
-import numpy as np
+import torch 
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import sys 
@@ -63,7 +61,7 @@ def train_adam(model,
                 x_left, t_left, 
                 x_right, t_right,
                *,
-               epochs = 20000,
+               epochs = 10000,
                lr=5e-4,
                verbose = True):
     
@@ -135,9 +133,10 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
     plt.close()
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "kan".lower()
+    model_name = "powermlp".lower()
     problem_str = "convection"
-    model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str).to(device)
+    act = "mish".lower()
+    model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str, activation=act ).to(device)
     # save model
     model_save_path = os.path.join(os.getcwd(),"trained_models")
     if not os.path.exists(model_save_path):
@@ -145,10 +144,11 @@ if __name__ == "__main__":
     loss_save_path = os.path.join(os.getcwd(),"img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
-    N_inside = 1000
-    N_boundary = 200
+    N_inside = 1500
+    N_boundary = 300
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
     adam_trained_flag = False
+    time_start = time.time()
     if adam_trained_flag:
         model.load_state_dict(torch.load(os.path.join(model_save_path,f"{model_name}-adam.pth")))
     else:
@@ -158,16 +158,21 @@ if __name__ == "__main__":
                                               x_left, t_left, 
                                               x_right, t_right  
                                             )
-        print(f"Period 1 end, Loss: {loss_list_adam[-1]:.6e}")
-        torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-adam.pth"))
-        plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))    
+        # print(f"Period 1 end, Loss: {loss_list_adam[-1]:.6e}")
+        # torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}-adam.pth"))
+        # plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))    
     
     
     model, loss_list_lbfgs = train_lbfgs( model,x,y,
                                           x_lower , t_lower, x_left, t_left, x_right, t_right,
                                           lr=1e-5
                                           )
-    torch.save(model.state_dict(),os.path.join(model_save_path,f"{model_name}.pth"))
+    
+    time_end = time.time()
+    print(f"Training time: {time_end-time_start:.2f} seconds")
+    save_path = os.path.join(model_save_path,f"{model_name}-{act}-beta-{BETA}.pth")
+    torch.save(model.state_dict(), save_path)
+    print(f"Model saved at {save_path}") 
     # save loss curve
     
     plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))

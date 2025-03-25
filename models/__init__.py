@@ -1,5 +1,6 @@
 # Description: This file is used to import all the models in the models directory.
 from typing import Literal
+import torch
 from .PINN import PINN
 from .PINNsformer import PINNsformer
 from .KAN import KAN
@@ -12,14 +13,15 @@ from .powermlp import PowerMLP
 
 __all__ = ['PINN','PINNsformer','KAN','DeepONet','FNO1d','RBFKAN','fftKAN','wavKAN','PowerMLP']
 
-MODELS = Literal["pinn","pinnsformer","kan","fls","rbfkan","fftkan","wavkan","powermlp"]
+MODELS = Literal["pinn","pinnsformer","kan","fls","rbfkan","fftkan","wavkan","powermlp","fno1d"]
 
 def get_model(
               model_name:MODELS = "pinn",
               input_dim = 2,
               hidden_dim = 64,
               output_dim = 1,
-              problem:str = "poisson"
+              problem:str = "poisson",
+              activation:str =None,
               ):
     match problem:
         case "poisson":
@@ -31,9 +33,7 @@ def get_model(
                 case "pinn":
                     model = PINN(layers=[input_dim,hidden_dim,hidden_dim,hidden_dim,output_dim], is_fls=False)
                 case "fls":
-                    model = PINN(layers=[input_dim,hidden_dim,hidden_dim,hidden_dim,output_dim], is_fls=True)  
-                case "pinnsformer":
-                    model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
+                    model = PINN(layers=[input_dim,hidden_dim,hidden_dim,hidden_dim,output_dim], is_fls=True)   
                 case "kan":
                     model = KAN(layers=[input_dim,16,16,output_dim])
                 case "rbfkan":
@@ -48,12 +48,16 @@ def get_model(
             match model_name:
                 case "pinn":
                     model = PINN(layers=[input_dim,16,32,64,128,64,32,16,output_dim], is_fls=False)
-                case "pinnsformer":
-                    model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
                 case "kan":
-                    model = KAN(layers=[input_dim,6,14,6,output_dim])
+                    if activation == "mish":
+                        model = KAN(layers=[input_dim,4,9,6,output_dim],spline_order=2,base_activation=torch.nn.Mish)
+                    else:
+                        model = KAN(layers=[input_dim,6,9,6,output_dim],spline_order=2)
                 case "powermlp":
-                    model = PowerMLP(dim_list=[2,16,32,16,1], repu_order= 3)
+                    if activation == "mish":
+                        model = PowerMLP(dim_list=[input_dim,16,32,64,64,32,16,output_dim], repu_order=3,act="mish")
+                    else:
+                        model = PowerMLP(dim_list=[input_dim,16,32,64,64,32,16,output_dim], repu_order=3,act = "silu")
         case "wave":
             if input_dim is None:
                 input_dim = 2
@@ -62,10 +66,14 @@ def get_model(
             match model_name:
                 case "pinn":
                     model = PINN(layers=[input_dim,32,128,128,32,output_dim], is_fls=False)
-                case "pinnsformer":
-                    model = PINNsformer(d_in=input_dim,d_out=output_dim,d_hidden=hidden_dim,d_model=32,N=1,heads=2)
                 case "kan":
-                    model = KAN(layers=[input_dim,8,16,4,output_dim])
+                    if activation == "mish":
+                        model = KAN(layers=[input_dim,8,16,4,output_dim],base_activation=torch.nn.Mish)
+                    else:
+                        model = KAN(layers=[input_dim,8,16,4,output_dim])
                 case "powermlp":
-                    model = PowerMLP(dim_list=[2,32,64,64,32,1], repu_order= 3)
+                    if activation == "mish":
+                        model = PowerMLP(dim_list=[2,32,64,64,32,1], repu_order= 3,act="mish")
+                    else:
+                        model = PowerMLP(dim_list=[2,32,64,64,32,1], repu_order= 3,act = "silu")
     return model

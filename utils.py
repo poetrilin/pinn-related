@@ -1,3 +1,5 @@
+import time
+from functools import wraps
 import numpy as np
 import torch
 import torch.nn as nn
@@ -31,8 +33,6 @@ def get_data(x_range, y_range, x_num, y_num):
     res = data.reshape(-1,2)
     return res, b_left, b_right, b_upper, b_lower
 
-
-
 def make_time_sequence(src, num_step=5, step=1e-4):
     dim = num_step
     src = np.repeat(np.expand_dims(src, axis=1), dim, axis=1)  # (N, L, 2)
@@ -48,3 +48,12 @@ def init_weights(m):
     if isinstance(m, nn.Linear):
         torch.nn.init.xavier_uniform(m.weight)
         m.bias.data.fill_(0.01)
+
+def timing(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.time()
+        result = func(*args, **kwargs)
+        print('\'' + func.__name__ + '\'' + ' took {} s'.format(time.time() - t))
+        return result
+    return wrapper
