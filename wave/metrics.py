@@ -47,13 +47,14 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
 
 
 if __name__ == "__main__":
-    model_name = "powermlp"
-    problem_str = "wave"
-    model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
-    model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str)
+    model_name = "kan"
+    problem_str = "wave" 
+    act = "mish"
+    model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}-{act}-beta-{BETA}.pth")
+    model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str,activation=act)
 
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
-    _ , _ =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-result.png")
+    _ , _ =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-{act}-beta-{BETA}-result.png")
     print(f"Number of parameters: {get_n_paras(model)}")
     

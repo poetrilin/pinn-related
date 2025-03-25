@@ -26,8 +26,6 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
     # 相对误差计算
     rMAE = torch.mean(torch.abs(u_pred - u_true)) / torch.mean(torch.abs(u_true))
     rRMSE = torch.norm(u_pred - u_true) / torch.norm(u_true)
-    print(f"Relative MAE:   {rMAE.item():.4e}")
-    print(f"Relative RMSE: {rRMSE.item():.4e}")
     if plot_flag == True:
         fig, ax = plt.subplots(1, 3, figsize=(15, 5))
         CS0 = ax[0].contourf(X_mesh, T_mesh, u_true.reshape(test_points, test_points).cpu().numpy(), cmap="viridis",)
@@ -44,13 +42,18 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
 
 
 if __name__ == "__main__":
-    model_name = "pinn"
+    model_name = "powermlp"
     problem_str = "convection"
-    model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
-    model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str)
+    act  = "mish"
+    model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}-{act}-beta-{BETA}.pth")
+    model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str,activation=act)
 
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
-    _ , _ =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-result.png")
+    save_path = os.path.join(os.getcwd(),"img")
+    rMAE , rRMSE =check_relative_error(model, test_points = 100, plot_flag=True,save_path=f"./img/{model_name}-{act}-BETA-{BETA}.png")
+    print(f"for Convection Problem, Model: {model_name}-{act}-BETA-{BETA}")
+    print(f"Relative MAE:   {rMAE :.4e}")
+    print(f"Relative RMSE: {rRMSE :.4e}")
     print(f"Number of parameters: {get_n_paras(model)}")
     

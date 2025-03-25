@@ -1,10 +1,12 @@
 ## Burgers' Equation
 
 $$
-\frac{\partial u} {\partial t}+u \frac{\partial u} {\partial x}=\nu\frac{\partial^{2} u} {\partial x^{2}} 
+\frac{\partial u} {\partial t}+u \frac{\partial u} {\partial x}=\frac{\nu}{\pi} \frac{\partial^{2} u} {\partial x^{2}} 
 $$
 
-where $x\in [0,2 \pi ],t\in [0,2]$ ,Here we set $\nu =0.01/ \pi$ in experiments.
+where $x\in [0,1 ],t\in [0,2]$ ,Here we set $\nu =0.01/ \pi$ in experiments.
+
+(1) PINN
 
 - $u(x,0)=−\sin (\pi x)$ ,
 - $u(−1,t)=u(1,t)=0$,

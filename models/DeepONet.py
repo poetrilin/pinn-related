@@ -28,7 +28,7 @@ class MLP(nn.Module):
 
 # Define the model
 class DeepONet(nn.Module):
-    def __init__(self,N_x,branch_layers=2,trunk_layers=2,p=16, is_stack=False):
+    def __init__(self,N_x,branch_layers=2,trunk_layers=2, p=16, is_stack=False):
         """ default unstacked model """
         super(DeepONet, self).__init__()
         self.stack = is_stack
