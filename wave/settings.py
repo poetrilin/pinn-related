@@ -1,2 +1,2 @@
 SEED = 42
-BETA = 0.01
+BETA = 0.1
