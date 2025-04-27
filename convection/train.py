@@ -133,7 +133,7 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
     plt.close()
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "powermlp".lower()
+    model_name = "kan".lower()
     problem_str = "convection"
     act = "mish".lower()
     model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str, activation=act ).to(device)
