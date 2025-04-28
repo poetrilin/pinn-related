@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import sys
+import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import get_n_paras
 from models import get_model
@@ -40,15 +41,24 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
         plt.savefig(save_path)
     return rMAE.item(),rRMSE.item()
 
-
+def get_args():
+    parser = argparse.ArgumentParser(description="Train a PINN for Poisson equation")
+    parser.add_argument("-m","--model_name", type=str, default="powermlp", help="Model name")
+    parser.add_argument("--problem", type=str, default="poisson", help="Problem type")
+    return parser.parse_args()
 if __name__ == "__main__":
-    model_name = "kan"
-    problem_str = "poisson"
-    model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}.pth")
+    args = get_args()
+    model_name = args.model_name.lower()
+    problem_str =  args.problem.lower()
+    model_path = os.path.join(os.path.dirname(__file__), f"./trained_models/{model_name}.pth")
     model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str)
-
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
-    _ , _ =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-result.png")
-    print(f"Number of parameters: {get_n_paras(model)}")
+    rMAE, rRMSE =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-result.png")
+    results_path = os.path.join(os.path.dirname(__file__), "./results")
+    with open(os.path.join(results_path,f"res.txt"),"a") as f:
+        f.write(f"{model_name} relative error:\n") 
+        f.write(f"Relative MAE:   {rMAE:.4e}\n")
+        f.write(f"Relative RMSE: {rRMSE:.4e}\n")
+        f.write(f"Number of parameters: {get_n_paras(model)}\n")
     

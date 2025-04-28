@@ -4,7 +4,7 @@ import torch
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import sys 
-
+import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from plotting import plot_loss
 from utils import set_seed
@@ -121,7 +121,11 @@ def train_lbfgs(model,
             break 
     return model,loss_list
 
-
+def get_args():
+    parser = argparse.ArgumentParser(description="Train a PINN for Burgers equation")
+    parser.add_argument("-m", "--model_name", type=str, default="pinn", help="Model name")
+    parser.add_argument("--problem", type=str, default="burgers", help="Problem type")
+    return parser.parse_args()
 
 # 训练并验证
 if __name__ == "__main__":

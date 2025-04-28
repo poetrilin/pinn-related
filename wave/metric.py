@@ -56,6 +56,11 @@ if __name__ == "__main__":
     model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
     print(f"1D Wave, Model: {model_name}-{act}-beta-{BETA}")
-    _ , _ =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-{act}-beta-{BETA}-result.png")
-    print(f"Number of parameters: {get_n_paras(model)}")
+    rMAE, rRMSE =check_relative_error(model, test_points=100, plot_flag=True,save_path=f"./img/{model_name}-{act}-beta-{BETA}-result.png")
+    results_path = os.path.join(os.path.dirname(__file__), "./results")
+    with open(os.path.join(results_path,f"res.txt"),"a") as f:
+        f.write(f"{model_name} relative error:\n") 
+        f.write(f"Relative MAE:   {rMAE:.4e}\n")
+        f.write(f"Relative RMSE: {rRMSE:.4e}\n")
+        f.write(f"Number of parameters: {get_n_paras(model)}\n")
     

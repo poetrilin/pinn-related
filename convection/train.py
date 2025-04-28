@@ -12,7 +12,7 @@ from plotting import plot_loss
 from utils import set_seed
 from models import get_model
 from settings import BETA,SEED
-
+import argparse
 if torch.cuda.is_available():
     device = torch.device("cuda")
 else:
@@ -131,19 +131,30 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
     else:
         plt.show()
     plt.close()
+def get_args():
+    parser = argparse.ArgumentParser(description="Train a PINN for Convection equation")
+    parser.add_argument("-m","--model_name", type=str, default="kan", help="Model name")
+    parser.add_argument("--problem", type=str, default="convection", help="Problem type")
+    parser.add_argument("--activation", type=str, default="mish", help="Activation function")
+    return parser.parse_args()
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "kan".lower()
-    problem_str = "convection"
-    act = "mish".lower()
+    args = get_args()
+    model_name = args.model_name.lower()
+    problem_str = args.problem.lower()
+    if args.activation is not None:
+        act = args.activation.lower()
+    else:
+        act = "mish"
     model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str, activation=act ).to(device)
     # save model
-    model_save_path = os.path.join(os.getcwd(),"trained_models")
+    model_save_path = os.path.join(os.path.dirname(__file__), "./trained_models")
     if not os.path.exists(model_save_path):
-        os.makedirs(model_save_path)
-    loss_save_path = os.path.join(os.getcwd(),"img")
+        os.makedirs(model_save_path, mode=0o777)
+
+    loss_save_path = os.path.join(os.path.dirname(__file__), "./img")
     if not os.path.exists(loss_save_path):
-        os.makedirs(loss_save_path)
+        os.makedirs(loss_save_path, mode=0o777)
     N_inside = 1500
     N_boundary = 300
     x, y, x_lower , t_lower, x_left, t_left, x_right, t_right = generate_data(N_inside, N_boundary)
@@ -174,8 +185,14 @@ if __name__ == "__main__":
     torch.save(model.state_dict(), save_path)
     print(f"Model saved at {save_path}") 
     # save loss curve
-    
     plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))
-
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-    
+    results_path = os.path.join(os.path.dirname(__file__), "./results")
+    if not os.path.exists(results_path):
+        os.makedirs(results_path, mode=0o777)
+    with open(os.path.join(results_path,f"res.txt"),"a") as f:
+        f.write(f"Model: {model_name}-{act}\n")
+        f.write(f"Beta: {BETA}\n") 
+        f.write(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}\n")
+        f.write(f"Training time: {time_end-time_start:.2f} seconds\n")
+        f.write(f"training loss: {loss_list_lbfgs[-1]:.4e}\n")
