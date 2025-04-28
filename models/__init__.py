@@ -32,12 +32,12 @@ def get_model(
             match model_name:
                 case "pinn":
                     model = PINN(layers=[input_dim,hidden_dim,hidden_dim,hidden_dim,output_dim], is_fls=False)
-                case "fls":
-                    model = PINN(layers=[input_dim,hidden_dim,hidden_dim,hidden_dim,output_dim], is_fls=True)   
+                # case "fls":
+                #     model = PINN(layers=[input_dim,hidden_dim,hidden_dim,hidden_dim,output_dim], is_fls=True)   
                 case "kan":
                     model = KAN(layers=[input_dim,16,16,output_dim])
-                case "rbfkan":
-                    model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)  
+                # case "rbfkan":
+                #     model = RBFKAN(input_dim=2,hidden_dim=64,output_dim=1,num_centers=32,hidden_layers=1)  
                 case "powermlp":
                     model = PowerMLP(dim_list=[2,64,64,64,1], repu_order= 3)
         case "convection":

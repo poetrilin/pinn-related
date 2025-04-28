@@ -4,6 +4,7 @@ import torch.nn as nn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import sys
+import argparse
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import get_n_paras
 from models import get_model
@@ -50,11 +51,18 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
         plt.savefig(save_path)
     return rMAE.item(),rRMSE.item()
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="PINN for Convection Problem")
+    parser.add_argument("-m","--model_name", type=str, default="kan", help="Model name")
+    parser.add_argument("--problem_str", type=str, default="convection", help="Problem string")
+    parser.add_argument("--act", type=str, default="mish", help="Activation function")
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    model_name = "kan"
-    problem_str = "convection"
-    act  = "mish"
+    args = parse_args()
+    model_name = args.model_name.lower()
+    problem_str = args.problem_str.lower()
+    act = args.act.lower()
     model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}-{act}-beta-{BETA}.pth")
     model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str,activation=act)
 
@@ -62,8 +70,9 @@ if __name__ == "__main__":
     model.eval()
     save_path = os.path.join(os.getcwd(),"img")
     rMAE , rRMSE =check_relative_error(model, test_points = 100, plot_flag=True,save_path=f"./img/{model_name}-{act}-BETA-{BETA}.png")
-    print(f"for Convection Problem, Model: {model_name}-{act}-BETA-{BETA}")
-    print(f"Relative MAE:   {rMAE :.4e}")
-    print(f"Relative RMSE: {rRMSE :.4e}")
-    print(f"Number of parameters: {get_n_paras(model)}")
-    
+    results_path = os.path.join(os.path.dirname(__file__), "./results")
+    with open(os.path.join(results_path,f"res.txt"),"a") as f:
+        f.write(f"{model_name} relative error:\n") 
+        f.write(f"Relative MAE:   {rMAE:.4e}\n")
+        f.write(f"Relative RMSE: {rRMSE:.4e}\n")
+        f.write(f"Number of parameters: {get_n_paras(model)}\n")

@@ -4,6 +4,7 @@ import torch
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import sys 
+import argparse 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from plotting import plot_loss
@@ -58,7 +59,7 @@ def train_adam(model,
                boundary_x,
                boundary_y,
                *,
-               epochs = 30000,
+               epochs = 20000,
                lr = 5e-4,
                verbose = True):
     
@@ -87,7 +88,7 @@ def train_lbfgs(model,
                boundary_x,
                boundary_y,
                *,
-               epochs = 500,
+               epochs = 2000,
                lr=1e-5,
                verbose = True):
     loss_list = []
@@ -118,23 +119,29 @@ def train_lbfgs(model,
             break 
     return model,loss_list
 
-
+def get_args():
+    parser = argparse.ArgumentParser(description="Train a PINN for Poisson equation")
+    parser.add_argument("-m","--model_name", type=str, default="powermlp", help="Model name")
+    parser.add_argument("--problem", type=str, default="poisson", help="Problem type")
+    return parser.parse_args()
 
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "powermlp".lower()
-    problem_str = "poisson"
+    args = get_args()
+    model_name = args.model_name.lower()
+    problem_str = args.problem.lower()
     model = get_model(model_name = model_name, input_dim=2, output_dim=1, 
                       problem=problem_str 
                       ).to(device)
     print(f"Model: {model_name} ,Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
     # save model
-    model_save_path = os.path.join(__file__,"../trained_models")
+    model_save_path = os.path.join(os.path.dirname(__file__), "./trained_models")
     if not os.path.exists(model_save_path):
-        os.makedirs(model_save_path)
-    loss_save_path = os.path.join(__file__,"../img")
+        os.makedirs(model_save_path, mode=0o777)
+
+    loss_save_path = os.path.join(os.path.dirname(__file__), "./img")
     if not os.path.exists(loss_save_path):
-        os.makedirs(loss_save_path)
+        os.makedirs(loss_save_path, mode=0o777)
     N_inside = 1000
     N_boundary = 200
     x, y, boundary_x, boundary_y = generate_data(N_inside, N_boundary)
@@ -154,7 +161,7 @@ if __name__ == "__main__":
     
     time_2 = time.time()
     time_adam = time_2 - time_start 
-    print(f"Adam training time: {time_adam:.2f}s")
+    # print(f"Adam training time: {time_adam:.2f}s")
     model, loss_list_lbfgs = train_lbfgs( model,x,y,
                                           boundary_x,
                                           boundary_y,
@@ -162,11 +169,17 @@ if __name__ == "__main__":
                                           )
     time_end = time.time()
     time_lbfgs = time_end - time_2
-    print(f"L-BFGS training time: {time_lbfgs:.2f}s")
-    print(f"Total training time: {time_end - time_start:.2f}s")
+    # print(f"L-BFGS training time: {time_lbfgs:.2f}s")
+    # print(f"Total training time: {time_end - time_start:.2f}s")
     torch.save(model.state_dict(), os.path.join(model_save_path,f"{model_name}.pth"))
     # save loss curve
     plot_loss(loss_list_lbfgs,save_path = os.path.join(loss_save_path,f"{model_name}-lbfgs_loss.png"))
-
+    results_path = os.path.join(os.path.dirname(__file__), "./results")
+    with open(os.path.join(results_path,f"res.txt"),"a") as f:
+        f.write(f"{model_name} training time:\n")
+        f.write(f"Adam training time: {time_adam:.2f}s\n")
+        f.write(f"L-BFGS training time: {time_lbfgs:.2f}s\n")
+        f.write(f"Total training time: {time_end - time_start:.2f}s\n")
+        f.write(f"training loss: {loss_list_lbfgs[-1]:.4e}\n")
     
     

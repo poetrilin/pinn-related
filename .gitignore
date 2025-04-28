@@ -13,3 +13,5 @@ img*
 
 test*
 .vscode*
+
+results/

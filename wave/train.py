@@ -13,6 +13,7 @@ from plotting import plot_loss
 from utils import set_seed
 from models import get_model
 from settings import BETA,SEED
+import argparse
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
@@ -56,7 +57,6 @@ def loss_function(model, x , t ,
     
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)))**2) + \
                     torch.mean((model(torch.cat((x_right, t_right), dim=1)))**2)
-
     # 边界点的损失
     return loss_res + 0.5*loss_bc + 0.4*loss_ic
 
@@ -164,17 +164,28 @@ def plot_loss(loss_list,save_path = None,log_scale = True):
         plt.show()
     plt.close()
 
+def get_args():
+    parser = argparse.ArgumentParser(description="Train a PINN for Wave equation")
+    parser.add_argument("-m", "--model_name", type=str, default="powermlp", help="Model name")
+    parser.add_argument("--problem", type=str, default="wave", help="Problem type")
+    parser.add_argument("--activation", type=str, default="silu", help="Activation function")
+    return parser.parse_args()
+
 # 训练并验证
 if __name__ == "__main__":
-    model_name = "powermlp".lower()
-    problem_str = "wave"
-    act = "silu".lower()
+    args = get_args()
+    model_name = args.model_name.lower()
+    problem_str = args.problem.lower()
+    if args.activation is not None:
+        act = args.activation.lower()
+    else:
+        act = "silu"
     model = get_model(model_name = model_name,input_dim=2,output_dim=1, problem=problem_str,activation = act).to(device)
     # save model
-    model_save_path = os.path.join(os.getcwd(),"trained_models")
+    model_save_path = os.path.join(os.path.dirname(__file__), "./trained_models")
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
-    loss_save_path = os.path.join(os.getcwd(),"img")
+    loss_save_path = os.path.join(os.path.dirname(__file__), "./img")
     if not os.path.exists(loss_save_path):
         os.makedirs(loss_save_path)
     N_inside = 2000
@@ -206,4 +217,10 @@ if __name__ == "__main__":
     plot_loss(loss_list_adam,save_path = os.path.join(loss_save_path,f"{model_name}-adam_loss.png"))
 
     print(f"Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
-     
+    results_path = os.path.join(os.path.dirname(__file__), "./results")
+    if not os.path.exists(results_path):
+        os.makedirs(results_path, mode=0o777)
+    with open(os.path.join(results_path,f"res.txt"),"a") as f:
+        f.write(f"{model_name} training time\n")
+        f.write(f"Training time: {time_end-time_start:.2f} seconds") 
+        f.write(f"training loss: {loss_list_lbfgs[-1]:.4e}\n")
