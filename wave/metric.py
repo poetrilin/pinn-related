@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils import get_n_paras
 from models import get_model
 from settings import BETA
-
+import argparse
 def true_solution(x, y):
     # u(x,t)=sin(πx)cos(π \sqrt(β) t)+ 0.5sin(βπx)cos(β\sqrt(β) πt)
     return ( torch.sin(torch.pi*x)*torch.cos(math.sqrt(BETA)*torch.pi*y) + \
@@ -44,12 +44,21 @@ def check_relative_error(model,test_points = 100,plot_flag = False,save_path =".
         cbar2 = fig.colorbar(CS2, ax=ax[2]) 
         plt.savefig(save_path)
     return rMAE.item(),rRMSE.item()
-
+def parse_args():
+    parser = argparse.ArgumentParser(description="1D Wave PDE")
+    parser.add_argument("--model_name", type=str, default="powermlp", help="Model name")
+    parser.add_argument("--problem", type=str, default="wave", help="Problem name")
+    parser.add_argument("--activation", type=str, default="silu", help="Activation function")
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    model_name = "powermlp"
-    problem_str = "wave" 
-    act = "silu"
+    args = parse_args()
+    model_name = args.model_name.lower()
+    problem_str = args.problem.lower()
+    if args.activation is not None:
+        act = args.activation.lower()
+    else:
+        act = "silu"
     model_path = os.path.join(os.getcwd(),f"trained_models/{model_name}-{act}-beta-{BETA}.pth")
     model = get_model(model_name=model_name,input_dim=2,output_dim=1, problem=problem_str,activation=act)
 
