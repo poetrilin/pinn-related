@@ -50,9 +50,10 @@ def get_model(
                     model = PINN(layers=[input_dim,16,32,64,128,64,32,16,output_dim], is_fls=False)
                 case "kan":
                     if activation == "mish":
-                        model = KAN(layers=[input_dim,5,11,6,output_dim],spline_order=2,base_activation=torch.nn.Mish)
+                        model = KAN(layers=[input_dim,5,10,10,5,3,output_dim],spline_order=3,base_activation=torch.nn.Mish)
+                        # model = KAN(layers=[input_dim,11,14,6,3,output_dim],spline_order=3,base_activation=torch.nn.Mish)
                     else:
-                        model = KAN(layers=[input_dim,5,11,6,output_dim],spline_order=2)
+                        model = KAN(layers=[input_dim,11,14,6,3,output_dim],spline_order=3)
                 case "powermlp":
                     if activation == "mish":
                         model = PowerMLP(dim_list=[input_dim,16,32,64,64,32,16,output_dim], repu_order=3,act="mish")

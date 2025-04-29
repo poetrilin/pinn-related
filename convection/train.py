@@ -36,9 +36,10 @@ def loss_function(model, x , t ,
 
     loss_ic = torch.mean((model(torch.cat((x_lower, t_lower), dim=1)) - torch.sin(x_lower))**2)
     loss_bc = torch.mean((model(torch.cat((x_left, t_left), dim=1)) - model(torch.cat((x_right, t_right), dim=1)))**2)
+ 
 
     # 边界点的损失
-    return loss_res + 0.1*loss_bc + 0.05*loss_ic
+    return loss_res + 0.1*loss_bc + 0.05*loss_ic 
 
 # 生成训练数据
 def generate_data(N_inside, N_boundary, x_max = 2*torch.pi, t_max = 1):
@@ -61,8 +62,8 @@ def train_adam(model,
                 x_left, t_left, 
                 x_right, t_right,
                *,
-               epochs = 10000,
-               lr=5e-4,
+               epochs = 6000,
+               lr=1e-3,
                verbose = True):
     
     loss_list = []

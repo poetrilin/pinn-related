@@ -71,6 +71,9 @@ if __name__ == "__main__":
     save_path = os.path.join(os.getcwd(),"img")
     rMAE , rRMSE =check_relative_error(model, test_points = 100, plot_flag=True,save_path=f"./img/{model_name}-{act}-BETA-{BETA}.png")
     results_path = os.path.join(os.path.dirname(__file__), "./results")
+    print(f"Model name: {model_name}-{act}-BETA-{BETA}")
+    print(f"Relative MAE: {rMAE:.4e}")
+    print(f"Relative RMSE: {rRMSE:.4e}")
     with open(os.path.join(results_path,f"res.txt"),"a") as f:
         f.write(f"{model_name} relative error:\n") 
         f.write(f"Relative MAE:   {rMAE:.4e}\n")

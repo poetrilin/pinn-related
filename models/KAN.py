@@ -250,6 +250,7 @@ class KAN(nn.Module):
     def __init__(
         self,
         layers,
+        res = 0, # residual connection [0,1]
         grid_size=50,
         spline_order=3,
         scale_noise = 0.1,
@@ -263,7 +264,7 @@ class KAN(nn.Module):
         self.grid_size = grid_size
         self.spline_order = spline_order
         layers_hidden= layers
-        
+        self.res = res
         self.layers = torch.nn.ModuleList()
         for in_features, out_features in zip(layers_hidden, layers_hidden[1:]):
             self.layers.append(
@@ -283,9 +284,10 @@ class KAN(nn.Module):
 
     def forward(self, x: torch.Tensor, update_grid=False):
         for layer in self.layers:
+             
             if update_grid:
                 layer.update_grid(x)
-            x = layer(x)
+            x = layer(x) 
         return x
 
     def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0):

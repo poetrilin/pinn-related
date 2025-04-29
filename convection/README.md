@@ -20,11 +20,9 @@ Here we let $L=Loss_{res}+Loss_{bc}+Loss_{ic}$
 
 | Models   | Paras  |  Loss         |  rMAE  | rRMSE |
 | :----:   | :----:     | :----:       | :----: | :----: |
-| pinn     | 21905    |   3.149170e-06 |3.3054e-01 | 4.1534e-01|
-| kan-silu | 11660    | 6.877966e-07|||
+| pinn     | 21905    |   3.149170e-06 |3.3054e-01 | 4.1534e-01| 
 | kan-mish | 11660    |  6.531657e-07|||
-| powermlp-silu | 23889| 2.470467e-06 |||
-| powermlp-mish | 23889|   3.028087e-06|||
+| powermlp-silu | 23889| 2.470467e-06 ||| 
 
  
 - $\beta = 0.1$
