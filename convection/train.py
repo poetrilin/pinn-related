@@ -80,7 +80,7 @@ def train_adam(model,
             print(f"Adam Epoch {epoch}, Loss: {loss.item():.6e}")
         # if epoch >=50 and epoch % 20 == 0:
         #     torch.save(model.state_dict(),f"trained_models/{model_name}-{epoch}.pth")
-        if epoch >= 1000 and abs(loss_list[-1]-loss_list[-2])< 1e-16:
+        if epoch >= 1000 and abs(loss_list[-1]-loss_list[-2])< 1e-10:
             print(f"Early stopping at epoch {epoch}, Loss: {loss.item():.6e}")
             break 
     return model,loss_list
@@ -136,7 +136,7 @@ def get_args():
     parser = argparse.ArgumentParser(description="Train a PINN for Convection equation")
     parser.add_argument("-m","--model_name", type=str, default="kan", help="Model name")
     parser.add_argument("--problem", type=str, default="convection", help="Problem type")
-    parser.add_argument("--activation", type=str, default="mish", help="Activation function")
+    parser.add_argument("--activation", type=str, default="silu", help="Activation function")
     return parser.parse_args()
 # 训练并验证
 if __name__ == "__main__":

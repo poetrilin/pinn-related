@@ -55,7 +55,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="PINN for Convection Problem")
     parser.add_argument("-m","--model_name", type=str, default="kan", help="Model name")
     parser.add_argument("--problem_str", type=str, default="convection", help="Problem string")
-    parser.add_argument("--act", type=str, default="mish", help="Activation function")
+    parser.add_argument("--act", type=str, default="silu", help="Activation function")
     return parser.parse_args()
 
 if __name__ == "__main__":
